@@ -168,10 +168,10 @@ export default function Sidebar({ currentPath, onPathChange, isOpen, onClose }: 
                                     <div className="h-2 bg-dark-bg rounded-full overflow-hidden">
                                         <div
                                             className={`h-full rounded-full transition-all ${storageInfo.usage_percentage > 90
-                                                    ? 'bg-red-500'
-                                                    : storageInfo.usage_percentage > 70
-                                                        ? 'bg-yellow-500'
-                                                        : 'bg-accent-blue'
+                                                ? 'bg-red-500'
+                                                : storageInfo.usage_percentage > 70
+                                                    ? 'bg-yellow-500'
+                                                    : 'bg-accent-blue'
                                                 }`}
                                             style={{ width: `${Math.min(storageInfo.usage_percentage, 100)}%` }}
                                         />

@@ -34,7 +34,7 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
         if (currentPath && currentPath !== '') {
             loadFiles();
             updatePathParts();
-            
+
             // Track navigation history
             if (!isNavigating && currentPath !== navigationHistory[historyIndex]) {
                 const newHistory = navigationHistory.slice(0, historyIndex + 1);
@@ -222,11 +222,10 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                             whileTap={{ scale: canGoBack ? 0.95 : 1 }}
                             onClick={goBack}
                             disabled={!canGoBack}
-                            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-                                canGoBack
+                            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${canGoBack
                                     ? 'hover:bg-dark-hover text-dark-text'
                                     : 'text-dark-muted cursor-not-allowed opacity-50'
-                            }`}
+                                }`}
                             title="Go back"
                         >
                             <ArrowLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
@@ -236,11 +235,10 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                             whileTap={{ scale: canGoForward ? 0.95 : 1 }}
                             onClick={goForward}
                             disabled={!canGoForward}
-                            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-                                canGoForward
+                            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${canGoForward
                                     ? 'hover:bg-dark-hover text-dark-text'
                                     : 'text-dark-muted cursor-not-allowed opacity-50'
-                            }`}
+                                }`}
                             title="Go forward"
                         >
                             <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
