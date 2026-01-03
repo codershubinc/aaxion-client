@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Folder, HardDrive, X, Download, Video, Github, FileText, Music, Image } from 'lucide-react';
-import { getSystemRootPath, getStorageInfo } from '@/services';
+import { getSystemRootPath, getStorageInfo, viewFiles } from '@/services';
 import type { StorageInfo } from '@/types';
 
 interface SidebarProps {
@@ -36,17 +36,30 @@ export default function Sidebar({ currentPath, onPathChange, isOpen, onClose }: 
                 onPathChange(root);
             }
 
-            // Set up important folders
-            const folders = [
-                { icon: Download, label: 'Downloads', path: `${root}/Downloads`, color: 'text-accent-green' },
-                { icon: Video, label: 'Videos', path: `${root}/Videos`, color: 'text-red-500' },
-                { icon: Music, label: 'Music', path: `${root}/Music`, color: 'text-pink-500' },
-                { icon: Image, label: 'Pictures', path: `${root}/Pictures`, color: 'text-yellow-500' },
-                { icon: FileText, label: 'Documents', path: `${root}/Documents`, color: 'text-blue-400' },
-                { icon: Github, label: 'Github', path: `${root}/Github`, color: 'text-purple-400' },
+            // Get actual files/folders in root directory
+            const files = await viewFiles(root);
+            const existingFolderNames = new Set(
+                files
+                    .filter(file => file.is_dir)
+                    .map(file => file.name)
+            );
+
+            // Define potential important folders
+            const potentialFolders = [
+                { icon: Download, label: 'Downloads', name: 'Downloads', path: `${root}/Downloads`, color: 'text-accent-green' },
+                { icon: Video, label: 'Videos', name: 'Videos', path: `${root}/Videos`, color: 'text-red-500' },
+                { icon: Music, label: 'Music', name: 'Music', path: `${root}/Music`, color: 'text-pink-500' },
+                { icon: Image, label: 'Pictures', name: 'Pictures', path: `${root}/Pictures`, color: 'text-yellow-500' },
+                { icon: FileText, label: 'Documents', name: 'Documents', path: `${root}/Documents`, color: 'text-blue-400' },
+                { icon: Github, label: 'Github', name: 'Github', path: `${root}/Github`, color: 'text-purple-400' },
             ];
 
-            setImportantFolders(folders);
+            // Filter to only show folders that exist
+            const availableFolders = potentialFolders.filter(folder =>
+                existingFolderNames.has(folder.name)
+            );
+
+            setImportantFolders(availableFolders);
         } catch (error) {
             console.error('Failed to load root path:', error);
         }
@@ -185,6 +198,44 @@ export default function Sidebar({ currentPath, onPathChange, isOpen, onClose }: 
                                         </span>
                                     </div>
                                 </div>
+
+                                {storageInfo.external_devices && storageInfo.external_devices.length > 0 && (
+                                    <div className="pt-4 border-t border-dark-border space-y-3">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-dark-muted">External Devices</span>
+                                        </div>
+                                        {storageInfo.external_devices.map((device, index) => (
+                                            <motion.button
+                                                key={index}
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => handleLinkClick(device.mount_point)}
+                                                className="w-full space-y-2 text-left hover:bg-dark-hover p-2 rounded-lg transition-colors group"
+                                            >
+                                                <div className="flex justify-between text-xs">
+                                                    <div className="flex items-center space-x-2 truncate">
+                                                        <HardDrive size={12} className="text-accent-purple flex-shrink-0" />
+                                                        <span className="text-dark-text truncate" title={device.mount_point}>
+                                                            {device.mount_point.split('/').pop() || device.device}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-dark-muted flex-shrink-0 ml-2">{formatBytes(device.total)}</span>
+                                                </div>
+                                                <div className="h-2 bg-dark-bg rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all ${device.usage_percentage > 90
+                                                            ? 'bg-red-500'
+                                                            : device.usage_percentage > 70
+                                                                ? 'bg-yellow-500'
+                                                                : 'bg-accent-purple'
+                                                            }`}
+                                                        style={{ width: `${Math.min(device.usage_percentage, 100)}%` }}
+                                                    />
+                                                </div>
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>

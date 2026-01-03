@@ -6,7 +6,8 @@ import { Folder, File, Download, Share2, ChevronRight, Grid, List, Home, FileTex
 import toast from 'react-hot-toast';
 import { viewFiles, downloadFile, requestTempShare, getSystemRootPath } from '@/services';
 import type { FileItem } from '@/types';
-import { formatFileSize } from '@/utils/fileUtils';
+import { formatFileSize, isImageFile } from '@/utils/fileUtils';
+import ImagePreview from './ImagePreview';
 
 interface FileExplorerProps {
     currentPath: string;
@@ -62,9 +63,6 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
     const loadFiles = async () => {
         setLoading(true);
         try {
-            if (!currentPath.startsWith(rootPath)) {
-                currentPath = rootPath;
-            }
             const data = await viewFiles(currentPath);
             setFiles(data || []);
         } catch (error) {
@@ -80,17 +78,15 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
             onPathChange(file.raw_path);
         } else if (isImageFile(file.name)) {
             setPreviewImage(file);
-            setImageZoom(1);
         }
-    };
-
-    const isImageFile = (fileName: string): boolean => {
-        const ext = fileName.split('.').pop()?.toLowerCase();
-        return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico', 'bmp'].includes(ext || '');
     };
 
     const getImagePreviewUrl = (filePath: string): string => {
         return `/files/download?path=${encodeURIComponent(filePath)}`;
+    };
+
+    const getImageThumbnailUrl = (filePath: string): string => {
+        return `/files/thumbnail?path=${encodeURIComponent(filePath)}`;
     };
 
     const handleDownload = (file: FileItem) => {
@@ -143,15 +139,30 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
         return currentPath === rootPath;
     };
 
-    const importantFolders = [
-        { icon: Download, label: 'Downloads', path: `${rootPath}/Downloads`, color: 'bg-accent-green/10 text-accent-green', hoverColor: 'hover:border-accent-green' },
-        { icon: Video, label: 'Videos', path: `${rootPath}/Videos`, color: 'bg-red-500/10 text-red-500', hoverColor: 'hover:border-red-500' },
-        { icon: Music, label: 'Music', path: `${rootPath}/Music`, color: 'bg-pink-500/10 text-pink-500', hoverColor: 'hover:border-pink-500' },
-        { icon: Image, label: 'Pictures', path: `${rootPath}/Pictures`, color: 'bg-yellow-500/10 text-yellow-500', hoverColor: 'hover:border-yellow-500' },
-        { icon: FileText, label: 'Documents', path: `${rootPath}/Documents`, color: 'bg-blue-400/10 text-blue-400', hoverColor: 'hover:border-blue-400' },
-        { icon: Github, label: 'Github', path: `${rootPath}/Github`, color: 'bg-purple-400/10 text-purple-400', hoverColor: 'hover:border-purple-400' },
-        { icon: Folder, label: 'aaxion', path: `${rootPath}/aaxion`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
-    ];
+    const [importantFolders, setImportantFolders] = useState<Array<{ icon: any; label: string; path: string; color: string; hoverColor: string }>>([]);
+
+    useEffect(() => {
+        if (currentPath === rootPath) {
+            const potentialFolders = [
+                { icon: Download, label: 'Downloads', name: 'Downloads', path: `${rootPath}/Downloads`, color: 'bg-accent-green/10 text-accent-green', hoverColor: 'hover:border-accent-green' },
+                { icon: Video, label: 'Videos', name: 'Videos', path: `${rootPath}/Videos`, color: 'bg-red-500/10 text-red-500', hoverColor: 'hover:border-red-500' },
+                { icon: Music, label: 'Music', name: 'Music', path: `${rootPath}/Music`, color: 'bg-pink-500/10 text-pink-500', hoverColor: 'hover:border-pink-500' },
+                { icon: Image, label: 'Pictures', name: 'Pictures', path: `${rootPath}/Pictures`, color: 'bg-yellow-500/10 text-yellow-500', hoverColor: 'hover:border-yellow-500' },
+                { icon: FileText, label: 'Documents', name: 'Documents', path: `${rootPath}/Documents`, color: 'bg-blue-400/10 text-blue-400', hoverColor: 'hover:border-blue-400' },
+                { icon: Github, label: 'Github', name: 'Github', path: `${rootPath}/Github`, color: 'bg-purple-400/10 text-purple-400', hoverColor: 'hover:border-purple-400' },
+                { icon: Folder, label: 'aaxion', name: 'aaxion', path: `${rootPath}/aaxion`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
+            ];
+
+            const existingFolderNames = new Set(
+                files
+                    .filter(file => file.is_dir)
+                    .map(file => file.name)
+            );
+
+            const available = potentialFolders.filter(f => existingFolderNames.has(f.name));
+            setImportantFolders(available);
+        }
+    }, [files, rootPath, currentPath]);
 
     const getFileIcon = (fileName: string, isDir: boolean) => {
         if (isDir) {
@@ -223,8 +234,8 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                             onClick={goBack}
                             disabled={!canGoBack}
                             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${canGoBack
-                                    ? 'hover:bg-dark-hover text-dark-text'
-                                    : 'text-dark-muted cursor-not-allowed opacity-50'
+                                ? 'hover:bg-dark-hover text-dark-text'
+                                : 'text-dark-muted cursor-not-allowed opacity-50'
                                 }`}
                             title="Go back"
                         >
@@ -236,8 +247,8 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                             onClick={goForward}
                             disabled={!canGoForward}
                             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${canGoForward
-                                    ? 'hover:bg-dark-hover text-dark-text'
-                                    : 'text-dark-muted cursor-not-allowed opacity-50'
+                                ? 'hover:bg-dark-hover text-dark-text'
+                                : 'text-dark-muted cursor-not-allowed opacity-50'
                                 }`}
                             title="Go forward"
                         >
@@ -352,7 +363,7 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                                             {isImageFile(file.name) && !file.is_dir ? (
                                                 <div className="w-full aspect-square rounded-lg overflow-hidden bg-dark-bg">
                                                     <img
-                                                        src={getImagePreviewUrl(file.raw_path)}
+                                                        src={getImageThumbnailUrl(file.raw_path)}
                                                         alt={file.name}
                                                         className="w-full h-full object-cover"
                                                         loading="lazy"
@@ -426,7 +437,7 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                                         {isImageFile(file.name) && !file.is_dir ? (
                                             <div className="w-12 h-12 rounded-lg overflow-hidden bg-dark-bg flex-shrink-0">
                                                 <img
-                                                    src={getImagePreviewUrl(file.raw_path)}
+                                                    src={getImageThumbnailUrl(file.raw_path)}
                                                     alt={file.name}
                                                     className="w-full h-full object-cover"
                                                     loading="lazy"
@@ -483,88 +494,12 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                 ) : null}
             </div>
             {/* Image Preview Modal */}
-            <AnimatePresence>
-                {previewImage && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0"
-                            onClick={() => setPreviewImage(null)}
-                        />
-
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative max-w-7xl max-h-[90vh] w-full"
-                        >
-                            {/* Header */}
-                            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
-                                <div className="flex-1 min-w-0 mr-4">
-                                    <h3 className="text-white font-medium truncate">{previewImage.name}</h3>
-                                    <p className="text-sm text-gray-300">{formatFileSize(previewImage.size)}</p>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <motion.button
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => setImageZoom(Math.max(0.5, imageZoom - 0.25))}
-                                        className="p-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
-                                        title="Zoom out"
-                                    >
-                                        <ZoomOut size={20} />
-                                    </motion.button>
-                                    <span className="text-white text-sm px-2">{Math.round(imageZoom * 100)}%</span>
-                                    <motion.button
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => setImageZoom(Math.min(3, imageZoom + 0.25))}
-                                        className="p-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
-                                        title="Zoom in"
-                                    >
-                                        <ZoomIn size={20} />
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => {
-                                            handleDownload(previewImage);
-                                        }}
-                                        className="p-2 bg-accent-blue hover:bg-accent-blue/80 rounded-lg transition-colors text-white"
-                                        title="Download"
-                                    >
-                                        <Download size={20} />
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => setPreviewImage(null)}
-                                        className="p-2 bg-black/50 hover:bg-black/70 rounded-lg transition-colors text-white"
-                                        title="Close"
-                                    >
-                                        <X size={20} />
-                                    </motion.button>
-                                </div>
-                            </div>
-
-                            {/* Image */}
-                            <div className="flex items-center justify-center overflow-auto max-h-[90vh] p-4">
-                                <motion.img
-                                    src={getImagePreviewUrl(previewImage.raw_path)}
-                                    alt={previewImage.name}
-                                    className="max-w-full h-auto rounded-lg shadow-2xl"
-                                    style={{ transform: `scale(${imageZoom})` }}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.3 }}
-                                />
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>        </div>
+            <ImagePreview
+                isOpen={!!previewImage}
+                onClose={() => setPreviewImage(null)}
+                files={files}
+                initialFile={previewImage}
+            />
+        </div>
     );
 }

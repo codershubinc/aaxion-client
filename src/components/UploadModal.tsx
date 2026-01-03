@@ -6,7 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import { X, Upload, FileUp, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadFile, uploadLargeFile } from '@/services';
-import { formatFileSize } from '@/utils/fileUtils';
+import { formatFileSize, isLocalNetwork } from '@/utils/fileUtils';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -19,6 +19,7 @@ interface UploadingFile {
     file: File;
     progress: number;
     status: 'pending' | 'uploading' | 'completed' | 'error';
+    speed?: number;
 }
 
 export default function UploadModal({ isOpen, onClose, currentPath, onUploadComplete }: UploadModalProps) {
@@ -65,20 +66,21 @@ export default function UploadModal({ isOpen, onClose, currentPath, onUploadComp
                 );
 
                 const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024; // 100MB
+                const isLocal = isLocalNetwork();
 
-                if (fileItem.file.size > LARGE_FILE_THRESHOLD) {
-                    await uploadLargeFile(fileItem.file, currentPath, (progress) => {
+                if (!isLocal && fileItem.file.size > LARGE_FILE_THRESHOLD) {
+                    await uploadLargeFile(fileItem.file, currentPath, (progress, speed) => {
                         setUploadingFiles(prev =>
                             prev.map((f, idx) =>
-                                idx === i ? { ...f, progress } : f
+                                idx === i ? { ...f, progress, speed } : f
                             )
                         );
                     });
                 } else {
-                    await uploadFile(fileItem.file, currentPath, (progress) => {
+                    await uploadFile(fileItem.file, currentPath, (progress, speed) => {
                         setUploadingFiles(prev =>
                             prev.map((f, idx) =>
-                                idx === i ? { ...f, progress } : f
+                                idx === i ? { ...f, progress, speed } : f
                             )
                         );
                     });
@@ -219,9 +221,16 @@ export default function UploadModal({ isOpen, onClose, currentPath, onUploadComp
                                                                     className="h-full bg-accent-blue rounded-full"
                                                                 />
                                                             </div>
-                                                            <p className="text-xs text-dark-muted mt-1">
-                                                                {item.progress}%
-                                                            </p>
+                                                            <div className="flex justify-between items-center mt-1">
+                                                                <p className="text-xs text-dark-muted">
+                                                                    {item.progress}%
+                                                                </p>
+                                                                {item.speed !== undefined && (
+                                                                    <p className="text-xs text-dark-muted">
+                                                                        {formatFileSize(item.speed)}/s
+                                                                    </p>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
