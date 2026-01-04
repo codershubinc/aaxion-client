@@ -5,11 +5,11 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: 'http://192.168.1.100:8080/api/:path*',
+                destination: 'http://192.168.1.104:8080/api/:path*',
             },
             {
                 source: '/files/:path*',
-                destination: 'http://192.168.1.100:8080/files/:path*',
+                destination: 'http://192.168.1.104:8080/files/:path*',
             },
         ];
     },
