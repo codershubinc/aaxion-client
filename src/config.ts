@@ -1,6 +1,9 @@
 export const getApiBaseUrl = () => {
     if (typeof window !== 'undefined') {
         const storedIp = localStorage.getItem('API_IP');
+        if (!storedIp?.includes("localhost")) {
+            return `https://${storedIp}`;
+        }
         if (storedIp) {
             return `http://${storedIp}:8080`;
         }
