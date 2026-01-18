@@ -107,6 +107,40 @@ bun run build
 bun start
 ```
 
+## Docker Deployment
+
+The project includes a multi-stage Dockerfile for containerized deployment.
+
+### Building the Docker Image
+
+```bash
+docker build -t aaxion-web .
+```
+
+### Running the Container
+
+```bash
+docker run -p 3000:3000 aaxion-web
+```
+
+The application will be available at [http://localhost:3000](http://localhost:3000).
+
+### Docker Build Process
+
+1. **Stage 1 (Builder):** Uses `oven/bun:1-alpine` to install dependencies and build the Next.js application. The build outputs static files to the `/out` directory.
+
+2. **Stage 2 (Runner):** Uses `node:18-alpine` with the `serve` library to serve the static files from the `/out` directory on port 3000.
+
+### Custom Port
+
+To run on a different port:
+
+```bash
+docker run -p 8080:3000 aaxion-web
+```
+
+This maps port 8080 on your host to port 3000 in the container.
+
 ## Configuration
 
 ### Backend URL
