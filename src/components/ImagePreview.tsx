@@ -99,7 +99,11 @@ export default function ImagePreview({ isOpen, onClose, files, initialFile }: Im
 
     const getImagePreviewUrl = (filePath: string): string => {
         const baseUrl = getApiBaseUrl();
+<<<<<<< HEAD
         return `${baseUrl}${API_ENDPOINTS.FILES.DOWNLOAD}?path=${encodeURIComponent(filePath)}`;
+=======
+        return `${baseUrl}/files/download?path=${encodeURIComponent(filePath)}`;
+>>>>>>> 3cbd8b1bae27a2e4b42b8fcf2e848f7510ba5432
     };
 
     const getImageThumbnailUrl = (filePath: string): string => {
