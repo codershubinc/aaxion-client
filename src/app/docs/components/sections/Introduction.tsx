@@ -12,7 +12,7 @@ export const Introduction = () => {
                 <div className="grid sm:grid-cols-2 gap-4 my-8">
                     {[
                         { title: 'Zero-Buffer Streaming', icon: Zap, desc: 'Streams data directly to disk. 10GB transfers use only ~32KB RAM.' },
-                        { title: 'Resumable Uploads', icon: Server, desc: 'Chunked upload support handles unstable networks seamlessly.' },
+                        { title: 'Chunked Uploads', icon: Server, desc: 'Split-file upload support handles heavy files on unstable networks.' },
                         { title: 'Secure Sharing', icon: Shield, desc: 'Generate one-time, time-limited secure links for external sharing.' },
                         { title: 'Efficient', icon: Cpu, desc: 'Minimal footprint. Runs on Linux (systemd) and Windows.' },
                     ].map((feat, i) => (

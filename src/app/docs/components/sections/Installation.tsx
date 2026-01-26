@@ -28,7 +28,7 @@ chmod +x aaxion-linux-amd64
 
 # Run server
 ./aaxion-linux-amd64`} />
-                            
+
                             <p className="text-sm text-gray-400 mt-4 mb-2">For Windows:</p>
                             <CodeBlock language="powershell" code={`# Just run the executable
 .\\aaxion-windows-amd64.exe`} />

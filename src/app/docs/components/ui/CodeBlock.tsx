@@ -38,7 +38,7 @@ export const CodeBlock = ({ language, code }: { language: string, code: string }
                     language={language}
                     style={vscDarkPlus}
                     customStyle={{ margin: 0, padding: '1.5rem', background: 'transparent' }}
-                    showLineNumbers={true} 
+                    showLineNumbers={true}
                     lineNumberStyle={{ minWidth: '2.5em', paddingRight: '1em', color: '#555', textAlign: 'right' }}
                 >
                     {code}

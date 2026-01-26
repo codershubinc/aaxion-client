@@ -33,7 +33,7 @@ export default function Home() {
                             <span className="text-blue-500">Efficient Storage Nodes</span>
                         </h1>
                         <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-400">
-                            A lightweight, high-performance file server written in Go. Zero-buffer streaming, resumable uploads, and secure sharing.
+                            A lightweight, high-performance file server written in Go. Zero-buffer streaming, chunked uploads, and secure sharing.
                         </p>
                         <div className="mt-10 flex justify-center gap-4">
                             <Link href="/d" className="px-8 py-3 rounded-lg bg-white text-[#121212] font-bold hover:bg-gray-200 transition">
@@ -70,8 +70,8 @@ export default function Home() {
                                 <div className="w-12 h-12 bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 text-2xl">
                                     🔄
                                 </div>
-                                <h3 className="text-xl font-semibold text-white mb-2">Resumable Uploads</h3>
-                                <p className="text-gray-400">Supports chunked uploading to bypass network limits and resume interrupted transfers.</p>
+                                <h3 className="text-xl font-semibold text-white mb-2">Chunked Uploads</h3>
+                                <p className="text-gray-400">Supports split-file uploading to bypass network limits and manage large transfers efficiently.</p>
                             </div>
                             {/* Feature 3 */}
                             <div className="p-6 bg-[#1E1E1E] rounded-xl border border-[#2D2D2D] hover:border-blue-500 transition duration-300">

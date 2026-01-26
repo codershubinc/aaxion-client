@@ -14,7 +14,7 @@ export const ApiReference = () => {
             </div>
 
             <div className="space-y-16">
-                
+
                 {/* Authentication */}
                 <div id="api-auth" className="scroll-mt-24">
                     <h3 className="text-xl font-bold text-white mb-4">🔐 Authentication</h3>
@@ -23,12 +23,16 @@ export const ApiReference = () => {
                         <br /><br />
                         Header format: <code className="text-blue-400">Authorization: Bearer {'<your_token>'}</code>
                     </p>
-                    
+
                     <h4 className="text-lg text-white font-semibold mt-6 mb-3">Quick examples</h4>
                     <div className="space-y-4">
                         <div>
                             <p className="text-sm text-gray-400 mb-2">Login:</p>
                             <CodeBlock language="bash" code={`curl -X POST -d '{"username":"your_user","password":"your_pass"}' "http://localhost:8080/auth/login"`} />
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-400 mb-2">Logout:</p>
+                            <CodeBlock language="bash" code={`curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/auth/logout"`} />
                         </div>
                     </div>
                 </div>
@@ -36,7 +40,7 @@ export const ApiReference = () => {
                 {/* User Management */}
                 <div id="api-user" className="scroll-mt-24 border-t border-gray-800 pt-12">
                     <h3 className="text-xl font-bold text-white mb-6">👤 User Management</h3>
-                    
+
                     <div className="space-y-8">
                         <div>
                             <div className="flex items-center gap-3 mb-3">
@@ -45,6 +49,10 @@ export const ApiReference = () => {
                             </div>
                             <p className="text-gray-400">Register the first user. Fails if a user already exists.</p>
                             <p className="text-gray-500 text-sm mt-1">Body: <code className="text-gray-400">{`{"username": "...", "password": "..."}`}</code></p>
+                            <div className="mt-4">
+                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Response</p>
+                                <CodeBlock language="json" code={`{ "message": "User created successfully" }`} />
+                            </div>
                         </div>
 
                         <div>
@@ -53,7 +61,13 @@ export const ApiReference = () => {
                                 <code className="text-base text-gray-200">/auth/login</code>
                             </div>
                             <p className="text-gray-400">Authenticate and receive a session token.</p>
-                            <p className="text-gray-500 text-sm mt-1">Response: <code className="text-gray-400">{`{"token": "..."}`}</code></p>
+                            <div className="mt-4">
+                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Response</p>
+                                <CodeBlock language="json" code={`{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expires_in": 3600
+}`} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -67,19 +81,26 @@ export const ApiReference = () => {
                             <code className="text-lg text-gray-200">/files/view?dir={'{directory_path}'}</code>
                         </div>
                         <p className="text-gray-400 mb-4">Return the contents of a directory. <span className="text-yellow-500/80 text-sm ml-2">⚠️ dir must be within monitored root</span></p>
-                        
+
                         <CodeBlock language="bash" code={`curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/files/view?dir=/home/swap/documents"`} />
-                        
+
                         <div className="mt-4">
-                            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Example Response</p>
+                            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Response</p>
                             <CodeBlock language="json" code={`[
-{
-"name": "Quazaar",
-"is_dir": true,
-"size": 4096,
-"path": "/home/swap/Github",
-"raw_path": "/home/swap/Github/Quazaar"
-}
+  {
+    "name": "Project-Alpha",
+    "is_dir": true,
+    "size": 4096,
+    "path": "/home/user/docs",
+    "raw_path": "/home/user/docs/Project-Alpha"
+  },
+  {
+    "name": "report.pdf",
+    "is_dir": false,
+    "size": 1048576,
+    "path": "/home/user/docs",
+    "raw_path": "/home/user/docs/report.pdf"
+  }
 ]`} />
                         </div>
                     </div>
@@ -92,6 +113,10 @@ export const ApiReference = () => {
                         </div>
                         <p className="text-gray-400 mb-2">Create a new directory at the specified path.</p>
                         <CodeBlock language="bash" code={`curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/create-directory?path=/home/swap/new_folder"`} />
+                        <div className="mt-4">
+                            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Response</p>
+                            <CodeBlock language="json" code={`{ "message": "Directory created successfully" }`} />
+                        </div>
                     </div>
                 </div>
 
@@ -108,6 +133,10 @@ export const ApiReference = () => {
                                 <code className="text-gray-200">/files/upload?dir={'{directory_path}'}</code>
                             </div>
                             <CodeBlock language="bash" code={`curl -H "Authorization: Bearer $TOKEN" -F "file=@/tmp/example.txt" "http://localhost:8080/files/upload?dir=/home/swap/documents"`} />
+                            <div className="mt-4">
+                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Response</p>
+                                <CodeBlock language="json" code={`{ "message": "File uploaded successfully" }`} />
+                            </div>
                         </div>
 
                         <div>
@@ -116,17 +145,32 @@ export const ApiReference = () => {
                                 <div>
                                     <p className="text-sm font-bold text-blue-400 mb-1">1. Start Session</p>
                                     <code className="block bg-gray-900 px-2 py-1 rounded text-gray-300 text-sm mb-2">POST /files/upload/chunk/start?filename=...</code>
+                                    <p className="text-xs text-gray-500 mb-2">Initialize a chunked upload session. Returns session info.</p>
                                     <CodeBlock language="bash" code={`curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/upload/chunk/start?filename=large.zip"`} />
+                                    <div className="mt-2">
+                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Response</p>
+                                        <CodeBlock language="json" code={`{ "upload_id": "uid_12345", "chunk_size": 1048576 }`} />
+                                    </div>
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-blue-400 mb-1">2. Upload Chunk (Binary Body)</p>
                                     <code className="block bg-gray-900 px-2 py-1 rounded text-gray-300 text-sm mb-2">POST /files/upload/chunk?filename=...&chunk_index=0</code>
+                                    <p className="text-xs text-gray-500 mb-2">Upload a single chunk via raw binary body. Increment index from 0.</p>
                                     <CodeBlock language="bash" code={`curl -H "Authorization: Bearer $TOKEN" --data-binary @chunk0.bin "http://localhost:8080/files/upload/chunk?filename=large.zip&chunk_index=0"`} />
+                                    <div className="mt-2">
+                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Response</p>
+                                        <CodeBlock language="json" code={`{ "status": "chunk_received", "index": 0 }`} />
+                                    </div>
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-blue-400 mb-1">3. Complete & Merge</p>
                                     <code className="block bg-gray-900 px-2 py-1 rounded text-gray-300 text-sm mb-2">POST /files/upload/chunk/complete?filename=...&dir=...</code>
+                                    <p className="text-xs text-gray-500 mb-2">Merge all uploaded chunks into final file.</p>
                                     <CodeBlock language="bash" code={`curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/upload/chunk/complete?filename=large.zip&dir=/home/swap/documents"`} />
+                                    <div className="mt-2">
+                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Response</p>
+                                        <CodeBlock language="json" code={`{ "message": "Upload completed successfully", "path": "/home/swap/documents/large.zip" }`} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -136,8 +180,8 @@ export const ApiReference = () => {
                 {/* Sharing */}
                 <div id="api-share" className="scroll-mt-24 border-t border-gray-800 pt-12">
                     <h3 className="text-xl font-bold text-white mb-6">🔗 Temporary File Sharing</h3>
-                    
-                    <div className="grid lg:grid-cols-2 gap-8">
+
+                    <div className="space-y-8">
                         <div>
                             <h4 className="font-semibold text-gray-300 mb-3">1. Generate Link</h4>
                             <div className="flex items-center gap-3 mb-3">
@@ -145,8 +189,12 @@ export const ApiReference = () => {
                                 <code className="text-sm text-gray-200">/files/d/r?file_path=...</code>
                             </div>
                             <CodeBlock language="bash" code={`curl "http://localhost:8080/files/d/r?file_path=/home/user/file.txt"`} />
-                            <div className="mt-2 bg-gray-900 p-3 rounded border border-gray-800 text-xs text-gray-400 font-mono">
-                                {`{ "share_link": "/files/d/t/abc...", "token": "abc..." }`}
+                            <div className="mt-4">
+                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Response</p>
+                                <CodeBlock language="json" code={`{
+  "share_link": "/files/d/t/a1b2c3d4e5f6",
+  "token": "a1b2c3d4e5f6"
+}`} />
                             </div>
                         </div>
 
