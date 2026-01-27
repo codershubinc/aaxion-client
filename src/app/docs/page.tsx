@@ -113,7 +113,7 @@ export default function Docs() {
                                 <Zap className="text-blue-500 w-5 h-5" fill="currentColor" />
                             </div>
                             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-                                Aaxion Docs
+                                Aaxion Drive Docs
                             </span>
                         </Link>
                     </div>
@@ -159,8 +159,8 @@ export default function Docs() {
                                 <button
                                     onClick={() => scrollToSection(item.id)}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${activeSection === item.id || (item.children && item.children.some(child => activeSection === child.id))
-                                            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                            : 'text-gray-400 hover:text-white hover:bg-gray-900'
+                                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                        : 'text-gray-400 hover:text-white hover:bg-gray-900'
                                         }`}
                                 >
                                     <item.icon size={16} className={activeSection === item.id || (item.children && item.children.some(child => activeSection === child.id)) ? 'text-blue-400' : 'text-gray-500 group-hover:text-gray-300'} />
@@ -176,8 +176,8 @@ export default function Docs() {
                                                 key={child.id}
                                                 onClick={() => scrollToSection(child.id)}
                                                 className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${activeSection === child.id
-                                                        ? 'text-blue-400 font-medium'
-                                                        : 'text-gray-500 hover:text-gray-300'
+                                                    ? 'text-blue-400 font-medium'
+                                                    : 'text-gray-500 hover:text-gray-300'
                                                     }`}
                                             >
                                                 {child.label}
@@ -225,7 +225,7 @@ export default function Docs() {
                                     v1.0.0 Stable
                                 </span>
                                 <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-6">
-                                    Aaxion Documentation
+                                    Aaxion Drive Documentation
                                 </h1>
                                 <p className="text-xl text-gray-400 leading-relaxed max-w-2xl">
                                     Turn your legacy hardware into a high-performance, secure file cloud. Stream files efficiently with zero-buffer technology.
@@ -245,20 +245,34 @@ export default function Docs() {
                     <footer className="border-t border-gray-800 bg-[#0a0a0a] mt-20">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                                <div className="flex items-center gap-2">
-                                    <Zap className="text-blue-500 w-6 h-6" />
-                                    <span className="text-xl font-bold text-gray-200">Aaxion</span>
+                                <div className="mb-4 md:mb-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Zap className="text-blue-500 w-6 h-6" />
+                                        <span className="text-xl font-bold text-gray-200">Aaxion Drive</span>
+                                    </div>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        &copy; {new Date().getFullYear()} CodersHub Inc. Licensed under GNU AGPLv3.
+                                    </p>
                                 </div>
-                                <div className="flex gap-8 text-sm text-gray-400">
-                                    <Link href="/" className="hover:text-blue-400 transition-colors">Home</Link>
-                                    <a href="#" className="hover:text-blue-400 transition-colors">Documentation</a>
-                                    <a href="https://github.com/codershubinc/aaxion" className="hover:text-blue-400 transition-colors">GitHub</a>
-                                    <a href="#" className="hover:text-blue-400 transition-colors">Privacy</a>
+                                <div className="flex gap-6 text-sm font-medium">
+                                    <span className="text-gray-600 cursor-default">No Telemetry</span>
+                                    <a
+                                        href="https://github.com/codershubinc/aaxion/blob/main/LICENSE"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        License
+                                    </a>
+                                    <a
+                                        href="https://github.com/codershubinc/aaxion"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        GitHub
+                                    </a>
                                 </div>
-                            </div>
-                            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
-                                <p>&copy; {new Date().getFullYear()} CodersHub Inc. All rights reserved.</p>
-                                <p className="mt-2">Aaxion is a trademark of CodersHub Inc.</p>
                             </div>
                         </div>
                     </footer>

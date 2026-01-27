@@ -1,4 +1,25 @@
+/*
+    Aaxion - Your own local Google Drive
+    Copyright (C) 2026 Swapnil Ingle
+
+    This file is part of Aaxion.
+
+    Aaxion is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Aaxion is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with Aaxion.  If not, see <https://www.gnu.org/licenses/>.
+*/
 import Link from 'next/link';
+import InstallCmd from '@/components/InstallCmd';
+import GitHubButton from '@/components/GitHubButton';
 
 export default function Home() {
     return (
@@ -8,15 +29,18 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <div className="flex items-center">
-                            <span className="text-2xl font-bold text-blue-500">⚡️ Aaxion</span>
+                            <span className="text-2xl font-bold text-blue-500">⚡️ Aaxion Drive</span>
                         </div>
-                        <div className="hidden md:flex space-x-8">
+                        <div className="hidden md:flex space-x-8 items-center">
                             <Link href="#" className="text-gray-300 hover:text-white transition">Home</Link>
                             <Link href="/docs" className="text-gray-300 hover:text-white transition">Docs</Link>
-                            <a href="https://github.com/codershubinc/aaxion" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition">GitHub</a>
                         </div>
-                        <div>
-                            <a href="https://github.com/codershubinc/aaxion/releases" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md font-medium transition">
+                        <div className="flex items-center gap-4">
+                            <GitHubButton />
+                            <a
+                                href="https://github.com/codershubinc/aaxion/releases"
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md font-medium transition"
+                            >
                                 Download
                             </a>
                         </div>
@@ -28,6 +52,20 @@ export default function Home() {
             <main className="flex-grow pt-24">
                 <div className="py-20 lg:py-32" style={{ background: 'radial-gradient(circle at center, #1E1E1E 0%, #121212 70%)' }}>
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <div className="flex justify-center mb-8">
+                            <a
+                                href="https://github.com/codershubinc/aaxion"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-sm font-semibold transition hover:bg-blue-500/20"
+                            >
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                </span>
+                                v0.1 Public Beta • Open Source (AGPLv3)
+                            </a>
+                        </div>
                         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6">
                             Repurpose Old Hardware into <br />
                             <span className="text-blue-500">Efficient Storage Nodes</span>
@@ -36,24 +74,42 @@ export default function Home() {
                             A lightweight, high-performance file server written in Go. Zero-buffer streaming, chunked uploads, and secure sharing.
                         </p>
                         <div className="mt-10 flex justify-center gap-4">
-                            <Link href="/d" className="px-8 py-3 rounded-lg bg-white text-[#121212] font-bold hover:bg-gray-200 transition">
+                            <Link
+                                href="/d"
+                                className="px-8 py-3 rounded-lg bg-white text-[#121212] font-bold hover:bg-gray-200 transition"
+                            >
                                 Get Started
                             </Link>
-                            <Link href="/docs" className="px-8 py-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition">
+                            <Link
+                                href="/docs"
+                                className="px-8 py-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition"
+                            >
                                 View Docs
                             </Link>
-                            <a href="https://github.com/codershubinc/aaxion" target="_blank" rel="noopener noreferrer" className="px-8 py-3 rounded-lg border border-[#3D3D3D] text-gray-300 font-bold hover:border-gray-400 hover:text-white transition">
+                            {/* REQUIRED BY AGPL: Source Link */}
+                            <a
+                                href="https://github.com/codershubinc/aaxion"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-8 py-3 rounded-lg border border-[#3D3D3D] text-gray-300 font-bold hover:border-gray-400 hover:text-white transition"
+                            >
                                 View Source
                             </a>
                         </div>
                     </div>
+                </div>
+                <div className="max-w-3xl mx-auto px-4 -mt-10 mb-20 relative z-10">
+                    <InstallCmd />
+                    <p className="text-center text-xs text-gray-500 mt-3">
+                        Or download manually from <Link href="/docs" className="text-gray-400 hover:text-white underline">Releases</Link>
+                    </p>
                 </div>
 
                 {/* Features Section */}
                 <div className="py-20 bg-[#121212]">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl font-bold text-white">Why Aaxion?</h2>
+                            <h2 className="text-3xl font-bold text-white">Why Aaxion Drive?</h2>
                             <p className="mt-4 text-gray-400">Engineered for extreme efficiency on limited resources.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -143,13 +199,33 @@ export default function Home() {
             <footer className="bg-[#121212] border-t border-[#1E1E1E] py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
                     <div className="mb-4 md:mb-0">
-                        <span className="text-xl font-bold text-gray-500">Aaxion</span>
-                        <p className="text-sm text-gray-600 mt-1">© {new Date().getFullYear()} CodersHub Inc. All rights reserved.</p>
+                        <span className="text-xl font-bold text-gray-500">Aaxion Drive</span>
+                        {/* LICENSE NOTICE IN FOOTER */}
+                        <p className="text-sm text-gray-600 mt-1">
+                            © {new Date().getFullYear()} CodersHub Inc. Licensed under GNU AGPLv3.
+                        </p>
                     </div>
                     <div className="flex space-x-6">
-                        <Link href="#" className="text-gray-500 hover:text-white transition">Privacy</Link>
-                        <Link href="#" className="text-gray-500 hover:text-white transition">Terms</Link>
-                        <a href="https://github.com/codershubinc/aaxion" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition">GitHub</a>
+                        <div className="flex space-x-6 text-sm font-medium">
+                            {/* Replaces "Privacy" with a trust signal */}
+                            <span className="text-gray-600 cursor-default">No Telemetry</span>
+                            <a
+                                href="https://github.com/codershubinc/aaxion/blob/main/LICENSE"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-500 hover:text-white transition"
+                            >
+                                License
+                            </a>
+                            <a
+                                href="https://github.com/codershubinc/aaxion"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-500 hover:text-white transition"
+                            >
+                                GitHub
+                            </a>
+                        </div>
                     </div>
                 </div>
             </footer>
