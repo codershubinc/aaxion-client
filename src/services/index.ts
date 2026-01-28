@@ -28,3 +28,13 @@ export {
     getSystemRootPath,
     getStorageInfo,
 } from './systemService';
+
+// Auth Service
+export {
+    login,
+    register,
+    setToken,
+    getToken,
+    removeToken,
+    isAuthenticated,
+} from './authService';

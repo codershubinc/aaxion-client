@@ -1,6 +1,6 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import type { SystemInfo, StorageInfo } from '@/types';
-import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
+import { API_ENDPOINTS } from '@/config';
 
 /**
  * System Service - Handles system-level operations
@@ -11,7 +11,7 @@ import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
  * @returns The root path of the system
  */
 export const getSystemRootPath = async (): Promise<string> => {
-    const response = await axios.get<SystemInfo>(`${getApiBaseUrl()}${API_ENDPOINTS.SYSTEM.ROOT_PATH}`);
+    const response = await apiClient.get<SystemInfo>(API_ENDPOINTS.SYSTEM.ROOT_PATH);
     return response.data.root_path;
 };
 
@@ -20,6 +20,6 @@ export const getSystemRootPath = async (): Promise<string> => {
  * @returns Storage information including total, used, available space
  */
 export const getStorageInfo = async (): Promise<StorageInfo> => {
-    const response = await axios.get<StorageInfo>(`${getApiBaseUrl()}${API_ENDPOINTS.SYSTEM.STORAGE}`);
+    const response = await apiClient.get<StorageInfo>(API_ENDPOINTS.SYSTEM.STORAGE);
     return response.data;
 };

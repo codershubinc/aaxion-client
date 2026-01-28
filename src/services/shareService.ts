@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
 
 /**
@@ -11,12 +11,11 @@ import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
  * @returns The temporary share link
  */
 export const requestTempShare = async (filePath: string): Promise<{ share_link: string, baseUri: string }> => {
-    const baseUri = getApiBaseUrl();
-    const response = await axios.get(`${baseUri}${API_ENDPOINTS.FILES.SHARE}`, {
+    const response = await apiClient.get(API_ENDPOINTS.FILES.SHARE, {
         params: { file_path: filePath },
     });
     return {
         share_link: response.data.share_link,
-        baseUri,
+        baseUri: getApiBaseUrl(),
     };
 };

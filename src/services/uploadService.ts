@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
+import apiClient from './apiClient';
+import { API_ENDPOINTS } from '@/config';
 
 /**
  * Upload Service - Handles file uploads including chunked uploads for large files
@@ -23,8 +23,11 @@ export const uploadFile = async (
     let lastTime = Date.now();
     let lastSpeed = 0;
 
-    await axios.post(`${getApiBaseUrl()}${API_ENDPOINTS.FILES.UPLOAD}`, formData, {
+    await apiClient.post(API_ENDPOINTS.FILES.UPLOAD, formData, {
         params: { dir: targetDir },
+        headers: {
+            'Content-Type': 'multipart/form-data', // Explicitly set for form data override
+        },
         onUploadProgress: (progressEvent) => {
             if (progressEvent.total && onProgress) {
                 const currentTime = Date.now();
@@ -52,7 +55,7 @@ export const uploadFile = async (
  * @param filename - The name of the file being uploaded
  */
 export const startChunkUpload = async (filename: string): Promise<void> => {
-    await axios.post(`${getApiBaseUrl()}${API_ENDPOINTS.FILES.CHUNK.START}`, null, {
+    await apiClient.post(API_ENDPOINTS.FILES.CHUNK.START, null, {
         params: { filename },
     });
 };
@@ -69,7 +72,7 @@ export const uploadChunk = async (
     chunkData: Blob,
     onProgress?: (loaded: number, total: number) => void
 ): Promise<void> => {
-    await axios.post(`${getApiBaseUrl()}${API_ENDPOINTS.FILES.CHUNK.UPLOAD}`, chunkData, {
+    await apiClient.post(API_ENDPOINTS.FILES.CHUNK.UPLOAD, chunkData, {
         params: { filename, chunk_index: chunkIndex },
         headers: {
             'Content-Type': 'application/octet-stream',
@@ -96,7 +99,7 @@ export const completeChunkUpload = async (
     if (onStart) {
         onStart();
     }
-    await axios.post(`${getApiBaseUrl()}${API_ENDPOINTS.FILES.CHUNK.COMPLETE}`, null, {
+    await apiClient.post(API_ENDPOINTS.FILES.CHUNK.COMPLETE, null, {
         params: { filename, dir: targetDir },
     });
 };
