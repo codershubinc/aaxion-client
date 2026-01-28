@@ -1,6 +1,7 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import type { FileItem } from '@/types';
-import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
+import { API_ENDPOINTS, getApiBaseUrl } from '@/config';
+import { getToken } from './authService';
 
 /**
  * File Service - Handles file viewing and directory operations
@@ -12,7 +13,7 @@ import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
  * @returns Array of file items
  */
 export const viewFiles = async (dirPath: string): Promise<FileItem[]> => {
-    const response = await axios.get(`${getApiBaseUrl()}${API_ENDPOINTS.FILES.VIEW}`, {
+    const response = await apiClient.get(API_ENDPOINTS.FILES.VIEW, {
         params: { dir: dirPath || '/' },
     });
     return response.data;
@@ -23,7 +24,7 @@ export const viewFiles = async (dirPath: string): Promise<FileItem[]> => {
  * @param path - The full path where the directory should be created
  */
 export const createDirectory = async (path: string): Promise<void> => {
-    await axios.post(`${getApiBaseUrl()}${API_ENDPOINTS.FILES.CREATE_DIRECTORY}`, null, {
+    await apiClient.post(API_ENDPOINTS.FILES.CREATE_DIRECTORY, null, {
         params: { path },
     });
 };
@@ -33,5 +34,18 @@ export const createDirectory = async (path: string): Promise<void> => {
  * @param filePath - The full path to the file to download
  */
 export const downloadFile = (filePath: string): void => {
-    window.location.href = `${getApiBaseUrl()}${API_ENDPOINTS.FILES.DOWNLOAD}?path=${encodeURIComponent(filePath)}`;
+    const token = getToken();
+    const baseUrl = getApiBaseUrl();
+    const downloadUrl = `${baseUrl}${API_ENDPOINTS.FILES.DOWNLOAD}?path=${encodeURIComponent(filePath)}`;
+
+    // For downloads, we might need a way to pass the token if it's protected.
+    // Standard window.location download doesn't support headers.
+    // If the API supports query param token, we should append it. 
+    // Otherwise, we might need to use fetch/blob download.
+    // For now, let's assume query string based auth for download or public access? 
+    // Or we handle it via XHR. 
+    // Given the context, let's append token as query param if available, just in case API supports it.
+
+    const url = token ? `${downloadUrl}&token=${token}` : downloadUrl;
+    window.location.href = url;
 }
