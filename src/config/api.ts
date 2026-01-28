@@ -15,5 +15,10 @@ export const API_ENDPOINTS = {
     SYSTEM: {
         ROOT_PATH: '/api/system/get-root-path',
         STORAGE: '/api/system/storage'
+    },
+    AUTH: {
+        LOGIN: '/auth/login',
+        REGISTER: '/auth/register',
+        LOGOUT: '/auth/logout'
     }
 } as const;

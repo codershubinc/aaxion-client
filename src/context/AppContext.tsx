@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { getToken, setToken as setAuthToken, removeToken } from '@/services';
 
 // Define the upload progress structure
 export interface UploadProgress {
@@ -16,19 +17,44 @@ export interface UploadProgress {
 interface AppContextType {
     uploadProgress: UploadProgress | null;
     updateUploadProgress: (progress: UploadProgress | null) => void;
+    isAuthenticated: boolean;
+    login: (token: string) => void;
+    logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
     const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-    const updateUploadProgress = (progress: UploadProgress | null) => {
+    useEffect(() => {
+        const token = getToken();
+        if (token) {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
+    const updateUploadProgress = useCallback((progress: UploadProgress | null) => {
         setUploadProgress(progress);
-    };
+    }, []);
+
+    const login = useCallback((token: string) => {
+        setAuthToken(token);
+        setIsAuthenticated(true);
+    }, []);
+
+    const logout = useCallback(() => {
+        removeToken();
+        setIsAuthenticated(false);
+    }, []);
+
+    const value = React.useMemo(() => ({
+        uploadProgress, updateUploadProgress, isAuthenticated, login, logout
+    }), [uploadProgress, updateUploadProgress, isAuthenticated, login, logout]);
 
     return (
-        <AppContext.Provider value={{ uploadProgress, updateUploadProgress }}>
+        <AppContext.Provider value={value}>
             {children}
         </AppContext.Provider>
     );
