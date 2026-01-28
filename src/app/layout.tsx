@@ -32,6 +32,11 @@ export const metadata: Metadata = {
         title: "Aaxion Drive - Personal Cloud Storage",
         description: "Transform your old hardware into a high-performance personal cloud. Secure, fast, and lightweight file management system.",
     },
+    appLinks: {
+        web: {
+            url: "https://aaxion.codershubinc.com",
+        },
+    },
 };
 
 export default function RootLayout({
