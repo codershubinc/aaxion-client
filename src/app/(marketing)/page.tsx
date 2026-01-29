@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import InstallCmd from '@/components/InstallCmd';
 import GitHubButton from '@/components/GitHubButton';
+import toast from 'react-hot-toast';
 
 export default function Home() {
     const router = useRouter();
@@ -36,14 +37,15 @@ export default function Home() {
         );
 
         if (isTauri) {
-            router.replace('/d');
+            toast.success("Transfering to /login")
+            router.replace('/login');
         } else {
             setIsReady(true);
         }
     }, [router]);
 
     if (!isReady) {
-        return <div className="min-h-screen bg-[#121212]" />;
+        return <div className="min-h-screen bg-[#ff0000]" />;
     }
 
     return (

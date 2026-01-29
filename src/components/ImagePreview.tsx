@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ZoomIn, ZoomOut, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, Download, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
 import { formatFileSize, isImageFile } from '@/utils/fileUtils';
 import { downloadFile, getToken } from '@/services';
 import type { FileItem } from '@/types';
@@ -22,6 +22,8 @@ export default function ImagePreview({ isOpen, onClose, files, initialFile }: Im
     const [imageZoom, setImageZoom] = useState(1);
     const [isLoaded, setIsLoaded] = useState(false);
     const thumbnailContainerRef = useRef<HTMLDivElement>(null);
+    console.log("Got image to preview", initialFile);
+    
 
     useEffect(() => {
         if (isOpen && files.length > 0) {
@@ -29,7 +31,7 @@ export default function ImagePreview({ isOpen, onClose, files, initialFile }: Im
             setImages(imageFiles);
 
             if (initialFile) {
-                const index = imageFiles.findIndex(f => f.path === initialFile.path);
+                const index = imageFiles.findIndex(f => f.raw_path === initialFile.raw_path);
                 setCurrentIndex(index >= 0 ? index : 0);
             }
             setImageZoom(1);
@@ -196,6 +198,12 @@ export default function ImagePreview({ isOpen, onClose, files, initialFile }: Im
                                 <ChevronRight size={32} />
                             </button>
 
+                            {!isLoaded && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Loader className="w-10 h-10 text-accent-blue animate-spin" />
+                                </div>
+                            )}
+
                             <motion.img
                                 key={currentImage.path}
                                 src={getImagePreviewUrl(currentImage.raw_path)}
@@ -203,7 +211,8 @@ export default function ImagePreview({ isOpen, onClose, files, initialFile }: Im
                                 className="max-w-full max-h-full object-contain shadow-2xl"
                                 style={{
                                     transform: `scale(${imageZoom})`,
-                                    cursor: imageZoom > 1 ? 'grab' : 'default'
+                                    cursor: imageZoom > 1 ? 'grab' : 'default',
+                                    display: isLoaded ? 'block' : 'none'
                                 }}
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -227,7 +236,7 @@ export default function ImagePreview({ isOpen, onClose, files, initialFile }: Im
                             >
                                 {images.map((img, idx) => (
                                     <button
-                                        key={img.path}
+                                        key={img.raw_path}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setCurrentIndex(idx);

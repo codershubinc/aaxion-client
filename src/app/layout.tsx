@@ -36,7 +36,15 @@ export const metadata: Metadata = {
         web: {
             url: "https://aaxion.codershubinc.com",
         },
+
     },
+    robots: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-video-preview": -1,
+        "max-snippet": -1,
+    }
 };
 
 export default function RootLayout({

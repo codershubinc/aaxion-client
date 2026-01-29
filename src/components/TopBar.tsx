@@ -1,8 +1,9 @@
 'use client';
 
-import { Upload, RefreshCw, FolderPlus, Menu, Loader } from 'lucide-react';
+import { Upload, RefreshCw, FolderPlus, Menu, Loader, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { createDirectory } from '@/services';
 import { formatFileSize } from '@/utils/fileUtils';
@@ -16,7 +17,8 @@ interface TopBarProps {
 }
 
 export default function TopBar({ onUploadClick, currentPath, onRefresh, onMenuClick }: TopBarProps) {
-    const { uploadProgress } = useAppState();
+    const router = useRouter();
+    const { uploadProgress, logout } = useAppState();
     const [isCreatingFolder, setIsCreatingFolder] = useState(false);
     const [folderName, setFolderName] = useState('');
 
@@ -24,6 +26,12 @@ export default function TopBar({ onUploadClick, currentPath, onRefresh, onMenuCl
         if (seconds < 60) return `${seconds}s`;
         if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
         return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+    };
+
+    const handleLogout = () => {
+        logout();
+        toast.success("Logged out successfully");
+        router.push("/login");
     };
 
     const handleCreateFolder = async () => {
@@ -190,6 +198,15 @@ export default function TopBar({ onUploadClick, currentPath, onRefresh, onMenuCl
                         </div>
                     </motion.div>
                 )}
+
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleLogout}
+                    className="p-2 bg-dark-hover hover:bg-red-500/10 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                >
+                    <LogOut className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                </motion.button>
             </div>
         </motion.header>
     );

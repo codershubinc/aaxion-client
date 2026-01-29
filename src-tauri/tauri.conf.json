@@ -5,7 +5,7 @@
   "identifier": "com.codershubinc.aaxion",
   "build": {
     "frontendDist": "../out",
-    "devUrl": "http://localhost:3000/d",
+    "devUrl": "http://localhost:3000",
     "beforeDevCommand": "bun dev",
     "beforeBuildCommand": "bun run build"
   },

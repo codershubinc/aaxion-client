@@ -1,54 +1,49 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence, useMotionValue, useMotionTemplate, useSpring, useTransform } from "framer-motion";
-import { Zap, Loader2, Lock, User, ArrowRight, ScanEye, ShieldCheck } from "lucide-react";
+import { motion, AnimatePresence, useMotionValue, useMotionTemplate } from "framer-motion";
+import { Zap, Loader2, Lock, User, ArrowRight, Wifi, WifiOff, RefreshCw, ChevronDown, Monitor } from "lucide-react";
 import toast from "react-hot-toast";
 import { login } from "@/services";
 import { useAppState } from "@/context/AppContext";
 import Link from "next/link";
+import Drone from "@/components/Drone";
+import { useDiscovery, ServerInfo } from "@/hooks/useDiscovery";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 export default function LoginPage() {
     const router = useRouter();
     const { login: authLogin } = useAppState();
+    const { isAuthenticated, isChecking } = useAuthCheck()
+
+    const { serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
+    const [isServerListOpen, setIsServerListOpen] = useState(false);
+
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isLogoMode, setIsLogoMode] = useState(true);
     const [focusedField, setFocusedField] = useState<"username" | "password" | null>(null);
 
-    // --- 🖱️ MOUSE TRACKING (Global for Drone) ---
-    // We track window mouse position for the "Drone Eye"
-    const [windowMouse, setWindowMouse] = useState({ x: 0, y: 0 });
-
-    // We track relative mouse position for the "Card Glow"
     const cardMouseX = useMotionValue(0);
     const cardMouseY = useMotionValue(0);
 
-    // Drone Eye Rotation Logic
-    const droneRef = useRef<HTMLDivElement>(null);
-    const [droneRotation, setDroneRotation] = useState(0);
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
-        const handleGlobalMouseMove = (e: MouseEvent) => {
-            setWindowMouse({ x: e.clientX, y: e.clientY });
+        scan();
+    }, [scan]);
 
-            // Calculate angle for the drone to look at the mouse
-            if (droneRef.current) {
-                const rect = droneRef.current.getBoundingClientRect();
-                const droneCenterX = rect.left + rect.width / 2;
-                const droneCenterY = rect.top + rect.height / 2;
-
-                // Math to get angle in degrees
-                const angle = Math.atan2(e.clientY - droneCenterY, e.clientX - droneCenterX) * (180 / Math.PI);
-                setDroneRotation(angle + 90);
-            }
-        };
-
-        window.addEventListener("mousemove", handleGlobalMouseMove);
-        return () => window.removeEventListener("mousemove", handleGlobalMouseMove);
-    }, []);
+    useEffect(() => {
+        if (isChecking) <><div>Loading ...</div></>;
+        if (isAuthenticated && !isChecking) {
+            router.push("/d");
+        }
+    }, [isAuthenticated, router, isChecking]);
 
     // Card Mouse Handler
     function handleCardMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
@@ -98,62 +93,87 @@ export default function LoginPage() {
     return (
         <div className="relative min-h-screen bg-[#050505] flex items-center justify-center p-4 overflow-hidden">
 
-            {/* --- 🤖 PEEKING DRONE (Top Right Corner) --- */}
-            {/* The Wire */}
-            <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: 96 }} // 96px wire length
-                transition={{ duration: 1, delay: 0.5, ease: "circOut" }}
-                className="fixed top-0 right-12 w-[1px] bg-gradient-to-b from-transparent via-blue-500/50 to-blue-500 z-50 pointer-events-none"
-            />
+            {/* --- SERVER STATUS INDICATOR (Top Left) --- */}
+            {mounted && (
+                <div className="absolute top-6 left-6 z-50 flex flex-col items-start gap-2">
+                    <motion.button
+                        onClick={() => availableServers.length > 1 && setIsServerListOpen(!isServerListOpen)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a0a0a]/80 backdrop-blur-md border border-[#2D2D2D] hover:bg-[#0a0a0a] transition-all shadow-xl ${availableServers.length > 1 ? "cursor-pointer active:scale-95" : ""}`}
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                    >
+                        {isScanning ? (
+                            <>
+                                <RefreshCw className="w-3.5 h-3.5 text-yellow-500 animate-spin" />
+                                <span className="text-xs text-gray-400 font-mono font-medium tracking-wide">SCANNING NETWORK...</span>
+                            </>
+                        ) : serverUrl ? (
+                            <>
+                                <Wifi className="w-3.5 h-3.5 text-green-500" />
+                                <span className="text-xs text-green-500/90 font-mono font-medium tracking-wide">
+                                    {selectedServer?.hostname || "CONNECTED"}
+                                </span>
+                                {availableServers.length > 1 && (
+                                    <span className="ml-1 text-[10px] bg-[#2D2D2D] text-gray-300 px-1.5 py-0.5 rounded-full">
+                                        {availableServers.length}
+                                    </span>
+                                )}
+                                {availableServers.length > 1 && <ChevronDown className="w-3 h-3 text-gray-500" />}
+                            </>
+                        ) : (
+                            <>
+                                <WifiOff className="w-3.5 h-3.5 text-red-500" />
+                                <span onClick={(e) => { e.stopPropagation(); scan(); }} className="text-xs text-red-500/90 font-mono font-medium hover:text-red-400 hover:underline tracking-wide cursor-pointer">
+                                    OFFLINE (RETRY)
+                                </span>
+                            </>
+                        )}
+                    </motion.button>
 
-            {/* The Drone Body */}
-            <motion.div
-                ref={droneRef}
-                initial={{ y: -150 }}
-                animate={{ y: 0 }}
-                transition={{ type: "spring", stiffness: 120, damping: 12, delay: 0.5 }}
-                className="fixed top-24 right-[calc(3rem-14px)] z-50 pointer-events-none"
-            >
-                <div className="relative group">
-                    {/* Glowing Aura */}
-                    <div className="absolute inset-0 bg-blue-500/20 blur-md rounded-full animate-pulse" />
-
-                    {/* Drone Chassis */}
-                    <div className="relative w-8 h-8 bg-[#0a0a0a] border border-blue-500/50 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.4)]">
-                        {/* The Rotating Eye */}
-                        <motion.div
-                            animate={{ rotate: droneRotation }}
-                            transition={{ type: "spring", stiffness: 200, damping: 30 }} // Smooth looking
-                        >
-                            <ScanEye className="w-5 h-5 text-blue-400" />
-                        </motion.div>
-                    </div>
-
-                    {/* Scanning Beam Effect */}
-                    <motion.div
-                        animate={{ opacity: [0, 0.5, 0], height: [0, 100] }}
-                        transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 bg-gradient-to-b from-blue-400/50 to-transparent blur-[1px]"
-                    />
+                    {/* Server Dropdown List */}
+                    <AnimatePresence>
+                        {isServerListOpen && availableServers.length > 1 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                className="bg-[#0a0a0a]/90 backdrop-blur-xl border border-[#2D2D2D] rounded-2xl overflow-hidden shadow-2xl p-1 min-w-[240px]"
+                            >
+                                <div className="px-3 py-2 text-[10px] text-gray-500 uppercase font-bold tracking-wider border-b border-[#2D2D2D]/50 mb-1">
+                                    Available Servers
+                                </div>
+                                {availableServers.map((srv) => (
+                                    <button
+                                        key={srv.fullname}
+                                        onClick={() => {
+                                            selectServer(srv);
+                                            setIsServerListOpen(false);
+                                        }}
+                                        className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-colors ${selectedServer?.fullname === srv.fullname ? "bg-blue-500/10 border border-blue-500/20" : "hover:bg-[#1a1a1a] border border-transparent"}`}
+                                    >
+                                        <div className={`p-1.5 rounded-lg ${selectedServer?.fullname === srv.fullname ? "bg-blue-500/20 text-blue-400" : "bg-[#1a1a1a] text-gray-400"}`}>
+                                            <Monitor className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className={`text-xs font-bold ${selectedServer?.fullname === srv.fullname ? "text-blue-400" : "text-gray-200"}`}>
+                                                {srv.hostname}
+                                            </span>
+                                            <span className="text-[10px] text-gray-500 font-mono">
+                                                {srv.addresses[0]}:{srv.port}
+                                            </span>
+                                        </div>
+                                        {selectedServer?.fullname === srv.fullname && (
+                                            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                                        )}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
-            </motion.div>
-
-            {/* --- 🏷️ PEEKING LABEL (Top Left Corner) --- */}
-            <motion.div
-                initial={{ x: -100, rotate: -45, opacity: 0 }}
-                animate={{ x: 0, rotate: -45, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 1 }}
-                className="fixed top-6 -left-10 z-40 bg-blue-950/30 border border-blue-500/20 px-10 py-1 backdrop-blur-sm"
-            >
-                <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-3 h-3 text-blue-400" />
-                    <span className="text-[10px] font-mono font-bold text-blue-300/70 tracking-[0.2em] uppercase">
-                        SECURE::NODE
-                    </span>
-                </div>
-            </motion.div>
-
+            )}
+            <Drone />
 
             {/* --- Background Ambient Effects --- */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -254,7 +274,6 @@ export default function LoginPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             {/* Inputs ... */}
-                            {/* (Same inputs as before, kept concise here for brevity) */}
                             <motion.div variants={itemVariants} className="space-y-2">
                                 <label className="text-xs font-semibold text-gray-400 ml-1 uppercase tracking-wider">Username</label>
                                 <div className="relative group/input">
@@ -272,8 +291,57 @@ export default function LoginPage() {
                             </motion.div>
 
                             <motion.div variants={itemVariants} className="pt-2">
-                                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group/btn">
-                                    {isLoading ? (<Loader2 className="w-5 h-5 animate-spin" />) : (<>Sign In<ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" /></>)}
+                                <motion.button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="relative w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden"
+                                    layout
+                                >
+                                    <AnimatePresence mode="wait" initial={false}>
+                                        {isLoading ? (
+                                            <motion.div
+                                                key="loader"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                transition={{ duration: 0.2 }}
+                                            >
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key="content"
+                                                initial="initial"
+                                                whileHover="hover"
+                                                whileTap="tap"
+                                                className="relative w-full flex items-center justify-center"
+                                            >
+                                                <motion.div
+                                                    className="flex items-center gap-2"
+                                                    variants={{
+                                                        initial: { y: 0, opacity: 1 },
+                                                        hover: { y: -30, opacity: 0 },
+                                                        tap: { scale: 0.95 }
+                                                    }}
+                                                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                >
+                                                    Sign In <ArrowRight className="w-4 h-4" />
+                                                </motion.div>
+
+                                                <motion.div
+                                                    className="absolute inset-0 flex items-center justify-center"
+                                                    variants={{
+                                                        initial: { y: 30, opacity: 0 },
+                                                        hover: { y: 0, opacity: 1 },
+                                                        tap: { scale: 0.95 }
+                                                    }}
+                                                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                >
+                                                    <ArrowRight className="w-6 h-6" />
+                                                </motion.div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </motion.button>
                             </motion.div>
                         </form>

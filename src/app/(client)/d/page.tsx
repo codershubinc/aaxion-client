@@ -6,6 +6,7 @@ import FileExplorer from '@/components/explorer/FileExplorer';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
 import UploadModal from '@/components/UploadModal';
+import { useAuthCheck } from '@/hooks/useAuthCheck';
 
 function DashboardContent() {
     const searchParams = useSearchParams();
@@ -14,16 +15,25 @@ function DashboardContent() {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
-
-    // Initialize from URL
+    const { isAuthenticated, isChecking } = useAuthCheck()
     useEffect(() => {
+        if (isChecking) <>
+            <div>
+                loading...
+            </div>
+        </>
+
+        if (!isAuthenticated && !isChecking) {
+            router.push('/login');
+            return;
+        }
         const dir = searchParams.get('dir');
         if (dir) {
             setCurrentPathState(dir);
         } else {
             setCurrentPathState('/');
         }
-    }, [searchParams]);
+    }, [searchParams, isAuthenticated, isChecking, router]);
 
     const handleRefresh = () => {
         setRefreshKey(prev => prev + 1);

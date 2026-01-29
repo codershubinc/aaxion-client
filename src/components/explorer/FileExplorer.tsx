@@ -83,6 +83,8 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
         if (file.is_dir) {
             onPathChange(file.raw_path);
         } else if (isImageFile(file.name)) {
+            console.log("setting img to preview", file);
+
             setPreviewImage(file);
         }
     };

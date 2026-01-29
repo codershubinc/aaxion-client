@@ -1,5 +1,12 @@
 export const getApiBaseUrl = () => {
     if (typeof window !== 'undefined') {
+        // Priority 1: Full URL from new Server Config Hook
+        const storedUrl = localStorage.getItem('AAXION_SERVER_URL');
+        if (storedUrl) {
+            return storedUrl;
+        }
+
+        // Priority 2: Legacy IP specific items
         const storedIp = localStorage.getItem('API_IP');
         if (storedIp?.includes("aaxion")) {
             return `https://${storedIp}`;
