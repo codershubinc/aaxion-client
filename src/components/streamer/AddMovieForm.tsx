@@ -1,9 +1,11 @@
 "use client";
 import { useState } from 'react';
 import { authenticatedFetch, API_BASE, getToken } from '@/lib/api';
-import { Upload, Loader2 } from 'lucide-react';
+import { Upload, Loader2, Search } from 'lucide-react';
 import { uploadFile, getSystemRootPath } from '@/services';
 import { formatFileSize } from '@/utils/fileUtils';
+
+const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'get_your_dont_look_here';
 
 interface AddMovieFormProps {
     onSuccess: () => void;
@@ -14,6 +16,32 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
     const [loading, setLoading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadSpeed, setUploadSpeed] = useState(0);
+
+    const [formTitle, setFormTitle] = useState('');
+    const [formPoster, setFormPoster] = useState('');
+    const [formDesc, setFormDesc] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+
+    const handleSearch = async () => {
+        if (!formTitle) return alert("Please enter a title first");
+        setIsSearching(true);
+        try {
+            const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(formTitle)}`);
+            const data = await res.json();
+
+            if (data.Response === 'True') {
+                setFormTitle(data.Title);
+                setFormDesc(data.Plot);
+                setFormPoster(data.Poster !== 'N/A' ? data.Poster : '');
+            } else {
+                alert("No movie found");
+            }
+        } catch (e) {
+            alert("Failed to fetch metadata. Check API Key.");
+        } finally {
+            setIsSearching(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -78,13 +106,27 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
                     <div className="grid grid-cols-2 gap-6">
                         <div className="col-span-2">
                             <label className="block text-sm font-medium text-gray-400 mb-2">Movie Title</label>
-                            <input
-                                type="text"
-                                name="title"
-                                required
-                                className="w-full bg-[#0a0a0a] border border-[#2D2D2D] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder:text-gray-700"
-                                placeholder="e.g. Inception"
-                            />
+                            <div className="relative flex gap-2">
+                                <input
+                                    type="text"
+                                    name="title"
+                                    required
+                                    value={formTitle}
+                                    onChange={(e) => setFormTitle(e.target.value)}
+                                    className="w-full bg-[#0a0a0a] border border-[#2D2D2D] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder:text-gray-700"
+                                    placeholder="e.g. Inception"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleSearch}
+                                    disabled={isSearching}
+                                    className="px-4 bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600/20 text-blue-400 rounded-xl transition-colors flex items-center gap-2"
+                                    title="Auto-fill from OMDb"
+                                >
+                                    {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                                    <span className="hidden sm:inline text-sm font-medium">Auto-fill</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div className="col-span-2">
@@ -102,6 +144,8 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
                             <input
                                 type="text"
                                 name="poster_path"
+                                value={formPoster}
+                                onChange={(e) => setFormPoster(e.target.value)}
                                 className="w-full bg-[#0a0a0a] border border-[#2D2D2D] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder:text-gray-700"
                                 placeholder="https://example.com/poster.jpg"
                             />
@@ -112,6 +156,8 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
                             <textarea
                                 name="description"
                                 rows={3}
+                                value={formDesc}
+                                onChange={(e) => setFormDesc(e.target.value)}
                                 className="w-full bg-[#0a0a0a] border border-[#2D2D2D] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder:text-gray-700 resize-none"
                                 placeholder="Enter movie description..."
                             />

@@ -13,6 +13,8 @@ apiClient.interceptors.request.use(
         config.baseURL = getApiBaseUrl();
 
         const token = getToken();
+        console.log("Token ::", token);
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

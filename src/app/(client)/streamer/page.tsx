@@ -16,7 +16,7 @@ export default function StreamerPage() {
 
 
     useEffect(() => {
-        const token = localStorage.getItem('aaxion_token');
+        const token = localStorage.getItem('auth_token');
         const username = localStorage.getItem('aaxion_user');
         if (token) {
             setIsAuthenticated(true);
@@ -25,7 +25,7 @@ export default function StreamerPage() {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('aaxion_token');
+        localStorage.removeItem('auth_token');
         setIsAuthenticated(false);
         setSelectedMovie(null);
         setViewMode('grid');

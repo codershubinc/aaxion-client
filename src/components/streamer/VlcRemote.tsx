@@ -40,6 +40,10 @@ export default function VlcRemote({ movie, onBack }: VlcRemoteProps) {
         return (time / length) * 100;
     };
 
+    const getVolumePercentage = () => {
+        return Math.round((volume / 256) * 100);
+    };
+
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         const seekTime = (parseInt(newVal) / 100) * length;
@@ -260,14 +264,20 @@ export default function VlcRemote({ movie, onBack }: VlcRemoteProps) {
 
                             {/* Volume Slider */}
                             <div className="hidden md:flex items-center gap-3 bg-black/40 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 ml-auto">
-                                <button onClick={() => setVolume(0)} className="text-gray-400 hover:text-white">
+                                <button onClick={() => setVolume(0)} className="text-gray-400 hover:text-white transition-colors relative group/vol">
                                     {volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover/vol:opacity-100 transition-opacity whitespace-nowrap">
+                                        {getVolumePercentage()}%
+                                    </span>
                                 </button>
-                                <input
-                                    type="range" min="0" max="320" value={volume}
-                                    onChange={(e) => setVolume(parseInt(e.target.value))}
-                                    className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
-                                />
+                                <div className="flex flex-col gap-1 w-24">
+                                    <input
+                                        type="range" min="0" max="320" value={volume}
+                                        onChange={(e) => setVolume(parseInt(e.target.value))}
+                                        className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:scale-110 transition-all"
+                                    />
+                                </div>
+                                <span className="text-xs font-mono text-gray-400 w-8 text-right">{getVolumePercentage()}%</span>
                             </div>
                         </div>
 
@@ -310,32 +320,71 @@ export default function VlcRemote({ movie, onBack }: VlcRemoteProps) {
                     </div>
 
                     {/* Technical Details Panel (Responsive Grid) */}
-                    {showDebug && (
+                    {showDebug && meta && (
                         <div className="w-full max-w-2xl mt-4 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-2xl animate-in fade-in slide-in-from-bottom-4">
-                            <h3 className="text-blue-400 font-bold mb-4 text-xs uppercase tracking-wider border-b border-white/5 pb-2">
-                                Stream Metadata
+                            <h3 className="text-blue-400 font-bold mb-4 text-xs uppercase tracking-wider border-b border-white/5 pb-2 flex justify-between items-center">
+                                <span>Stream Metadata</span>
+                                <span className="text-gray-500 normal-case">
+                                    {meta.category?.meta?.filename ? meta.category.meta.filename.substring(0, 30) + "..." : "Unknown Source"}
+                                </span>
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 text-sm font-mono text-xs md:text-sm">
-                                <div>
-                                    <span className="block text-gray-500 text-[10px] md:text-xs uppercase mb-1">Video</span>
-                                    <span className="text-white break-words">
-                                        {meta?.category?.["Stream 0"]?._type === "Video"
-                                            ? meta?.category?.["Stream 0"]?.Resolution
-                                            : (meta?.category?.["Stream 1"]?.Resolution || "Checking...")}
-                                    </span>
+
+                            <div className="space-y-4 font-mono text-xs md:text-sm">
+                                {/* Streams Listing */}
+                                <div className="grid gap-3">
+                                    {meta.category && Object.entries(meta.category).map(([key, value]: [string, any]) => {
+                                        if (!key.startsWith('Stream')) return null;
+
+                                        const isVideo = value.Type === 'Video';
+                                        const isAudio = value.Type === 'Audio';
+                                        const isSub = value.Type === 'Subtitle';
+
+                                        let icon = "❓";
+                                        let color = "text-gray-400";
+
+                                        if (isVideo) { icon = "📺"; color = "text-blue-400"; }
+                                        if (isAudio) { icon = "🔊"; color = "text-green-400"; }
+                                        if (isSub) { icon = "💬"; color = "text-yellow-400"; }
+
+                                        return (
+                                            <div key={key} className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors">
+                                                <span className="text-lg select-none">{icon}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className={`font-bold ${color} mb-0.5`}>
+                                                        {value.Type} <span className="opacity-50 text-[10px] ml-1">{key}</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-gray-300">
+                                                        {value.Language && (
+                                                            <span>Lang: <span className="text-white">{value.Language}</span></span>
+                                                        )}
+                                                        {value.Codec && (
+                                                            <span>Codec: <span className="text-gray-400">{value.Codec}</span></span>
+                                                        )}
+                                                        {value.Resolution && (
+                                                            <span>Res: <span className="text-white">{value.Resolution}</span></span>
+                                                        )}
+                                                        {value.Frame_rate && (
+                                                            <span>FPS: <span className="text-gray-400">{parseFloat(value.Frame_rate).toFixed(2)}</span></span>
+                                                        )}
+                                                        {value.Channels && (
+                                                            <span>Ch: <span className="text-gray-400">{value.Channels}</span></span>
+                                                        )}
+                                                        {value.Description && (
+                                                            <span className="col-span-2 text-gray-500 italic truncate">{value.Description}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                                <div>
-                                    <span className="block text-gray-500 text-[10px] md:text-xs uppercase mb-1">Audio</span>
-                                    <span className="text-white break-words">
-                                        {meta?.category?.["Stream 1"]?.Codec || "Checking..."}
-                                    </span>
-                                </div>
-                                <div className="sm:col-span-2">
-                                    <span className="block text-gray-500 text-[10px] md:text-xs uppercase mb-1">Source</span>
-                                    <div className="p-2 bg-white/5 rounded border border-white/5 text-gray-400 text-[10px] md:text-xs break-all">
-                                        {meta?.category?.meta?.filename || "Loading..."}
+
+                                {/* Raw Meta Fallback if needed */}
+                                {!meta.category && (
+                                    <div className="text-yellow-500 text-center py-4 bg-yellow-500/10 rounded-lg">
+                                        No stream details available
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     )}
