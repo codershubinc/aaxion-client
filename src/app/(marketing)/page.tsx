@@ -146,7 +146,7 @@ export default function Home() {
                             <div className="w-10 h-10 rounded bg-purple-500/20 flex items-center justify-center shrink-0">
                                 <HardDrive size={16} className="text-purple-400" />
                             </div>
-                             <div className="flex-1 space-y-2">
+                            <div className="flex-1 space-y-2">
                                 <div className="h-2 w-32 bg-white/10 rounded" />
                                 <div className="h-2 w-20 bg-white/5 rounded" />
                             </div>
