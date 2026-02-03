@@ -112,8 +112,8 @@ export default function Docs() {
                             <div className="bg-blue-600/20 p-1.5 rounded-lg group-hover:bg-blue-600/30 transition-colors">
                                 <Zap className="text-blue-500 w-5 h-5" fill="currentColor" />
                             </div>
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-                                Aaxion Drive Docs
+                            <span className={`text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500`}>
+                                Aaxion <span className="font-cursive text-2xl mx-1">Drive</span> Docs
                             </span>
                         </Link>
                     </div>
@@ -225,7 +225,7 @@ export default function Docs() {
                                     v1.0.0 Stable
                                 </span>
                                 <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-6">
-                                    Aaxion Drive Documentation
+                                    Aaxion <span className="font-cursive text-blue-400 mx-2 text-6xl">Drive</span> Documentation
                                 </h1>
                                 <p className="text-xl text-gray-400 leading-relaxed max-w-2xl">
                                     Turn your legacy hardware into a high-performance, secure file cloud. Stream files efficiently with zero-buffer technology.
@@ -248,7 +248,9 @@ export default function Docs() {
                                 <div className="mb-4 md:mb-0">
                                     <div className="flex items-center gap-2 mb-1">
                                         <Zap className="text-blue-500 w-6 h-6" />
-                                        <span className="text-xl font-bold text-gray-200">Aaxion Drive</span>
+                                        <span className="text-xl font-bold text-gray-200">
+                                            Aaxion <span className="font-cursive text-blue-500 ml-1 text-2xl">Drive</span>
+                                        </span>
                                     </div>
                                     <p className="text-sm text-gray-500 mt-1">
                                         &copy; {new Date().getFullYear()} CodersHub Inc. Licensed under GNU AGPLv3.

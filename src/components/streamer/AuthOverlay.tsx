@@ -1,7 +1,5 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useMotionTemplate } from "framer-motion";
 import { Zap, Loader2, Lock, User, ArrowRight, Wifi, WifiOff, RefreshCw, ChevronDown, Monitor } from "lucide-react";
 import toast from "react-hot-toast";
@@ -9,14 +7,14 @@ import { login } from "@/services";
 import { useAppState } from "@/context/AppContext";
 import Link from "next/link";
 import Drone from "@/components/Drone";
-import { useDiscovery, ServerInfo } from "@/hooks/useDiscovery";
-import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { useDiscovery } from "@/hooks/useDiscovery";
 
-export default function LoginPage() {
-    const router = useRouter();
+interface AuthOverlayProps {
+    onLogin: () => void;
+}
+
+export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
     const { login: authLogin } = useAppState();
-    const { isAuthenticated, isChecking } = useAuthCheck()
-
     const { serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
     const [isServerListOpen, setIsServerListOpen] = useState(false);
 
@@ -32,18 +30,8 @@ export default function LoginPage() {
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
-    }, []);
-
-    useEffect(() => {
         scan();
     }, [scan]);
-
-    useEffect(() => {
-        if (isChecking) <><div>Loading ...</div></>;
-        if (isAuthenticated && !isChecking) {
-            router.push("/d");
-        }
-    }, [isAuthenticated, router, isChecking]);
 
     // Card Mouse Handler
     function handleCardMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
@@ -71,7 +59,7 @@ export default function LoginPage() {
             const response = await login(username, password);
             authLogin(response.token);
             toast.success("Login successful");
-            router.push("/d");
+            onLogin();
         } catch (error: any) {
             toast.error(error.message || "Login failed");
         } finally {
@@ -91,7 +79,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="relative min-h-screen bg-[#050505] flex items-center justify-center p-4 overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-[#050505] flex items-center justify-center p-4 overflow-hidden">
 
             {/* --- SERVER STATUS INDICATOR (Top Left) --- */}
             {mounted && (
@@ -260,7 +248,7 @@ export default function LoginPage() {
                                             <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 tracking-tighter drop-shadow-sm">
                                                 Aaxion
                                             </h1>
-                                            <span className="text-xs font-bold tracking-[0.3em] text-blue-500/60 uppercase mt-1">Drive</span>
+                                            <span className="text-xs font-bold tracking-[0.3em] text-blue-500/60 uppercase mt-1">Stream</span>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -273,7 +261,6 @@ export default function LoginPage() {
                         </motion.div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* Inputs ... */}
                             <motion.div variants={itemVariants} className="space-y-2">
                                 <label className="text-xs font-semibold text-gray-400 ml-1 uppercase tracking-wider">Username</label>
                                 <div className="relative group/input">

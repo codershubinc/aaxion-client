@@ -5,16 +5,17 @@
   "identifier": "com.codershubinc.aaxion",
   "build": {
     "frontendDist": "../out",
-    "devUrl": "http://localhost:3000/d",
+    "devUrl": "http://localhost:3000",
     "beforeDevCommand": "bun dev",
     "beforeBuildCommand": "bun run build"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "Aaxion Drive",
         "width": 1200,
-        "height": 800,
+        "height": 900,
         "resizable": true,
         "fullscreen": false,
         "decorations": false,
@@ -27,7 +28,11 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": [
+      "deb",
+      "rpm",
+      "msi"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

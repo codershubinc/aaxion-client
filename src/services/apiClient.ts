@@ -10,10 +10,11 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
     (config) => {
-        // dynamic base URL support
         config.baseURL = getApiBaseUrl();
 
         const token = getToken();
+        console.log("Token ::", token);
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

@@ -83,6 +83,8 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
         if (file.is_dir) {
             onPathChange(file.raw_path);
         } else if (isImageFile(file.name)) {
+            console.log("setting img to preview", file);
+
             setPreviewImage(file);
         }
     };
@@ -198,6 +200,8 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
                 { icon: FileText, label: 'Documents', name: 'Documents', path: `${rootPath}/Documents`, color: 'bg-blue-400/10 text-blue-400', hoverColor: 'hover:border-blue-400' },
                 { icon: Github, label: 'Github', name: 'Github', path: `${rootPath}/Github`, color: 'bg-purple-400/10 text-purple-400', hoverColor: 'hover:border-purple-400' },
                 { icon: Folder, label: 'aaxion', name: 'aaxion', path: `${rootPath}/aaxion`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
+                { icon: Folder, label: 'Movies', name: 'Movies', path: `${rootPath}/Movies`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
+                { icon: Folder, label: 'Series', name: 'Series', path: `${rootPath}/Series`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
             ];
 
             const existingFolderNames = new Set(
