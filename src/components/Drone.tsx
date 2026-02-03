@@ -43,7 +43,7 @@ export default function Drone() {
                 ref={droneRef}
                 initial={{ y: -150 }}
                 animate={{ y: 0 }}
-                transition={{ type: "spring", stiffness: 120, damping: 12, delay: 0.5 }}
+                transition={{ type: "spring" as const, stiffness: 120, damping: 12, delay: 0.5 }}
                 className="fixed top-24 right-[calc(3rem-14px)] z-50 pointer-events-none"
             >
                 <div className="relative group">
@@ -55,7 +55,7 @@ export default function Drone() {
                         {/* The Rotating Eye */}
                         <motion.div
                             animate={{ rotate: droneRotation }}
-                            transition={{ type: "spring", stiffness: 200, damping: 30 }} // Smooth looking
+                            transition={{ type: "spring" as const, stiffness: 200, damping: 30 }} // Smooth looking
                         >
                             <ScanEye className="w-5 h-5 text-blue-400" />
                         </motion.div>

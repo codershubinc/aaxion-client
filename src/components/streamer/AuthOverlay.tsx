@@ -75,7 +75,7 @@ export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
 
     const itemVariants = {
         hidden: { y: 20, opacity: 0 },
-        show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 24 } },
+        show: { y: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
     };
 
     return (
@@ -89,7 +89,7 @@ export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
                         className={`flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a0a0a]/80 backdrop-blur-md border border-[#2D2D2D] hover:bg-[#0a0a0a] transition-all shadow-xl ${availableServers.length > 1 ? "cursor-pointer active:scale-95" : ""}`}
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                        transition={{ delay: 0.5, type: "spring" as const, stiffness: 200 }}
                     >
                         {isScanning ? (
                             <>
@@ -231,7 +231,7 @@ export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
                                             initial={{ scale: 0, opacity: 0, rotate: -180 }}
                                             animate={{ scale: 1, opacity: 1, rotate: 0 }}
                                             exit={{ scale: 0, opacity: 0, rotate: 180 }}
-                                            transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
+                                            transition={{ duration: 0.6, type: "spring" as const, stiffness: 200 }}
                                             className="w-20 h-20 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center border border-blue-500/10 shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]"
                                         >
                                             <Zap className="w-10 h-10 text-blue-500 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
