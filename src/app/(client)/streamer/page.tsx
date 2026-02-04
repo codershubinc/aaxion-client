@@ -3,17 +3,33 @@ import { useEffect, useState } from 'react';
 import AuthOverlay from '@/components/streamer/AuthOverlay';
 import MovieGrid from '@/components/streamer/MovieGrid';
 import AddMovieForm from '@/components/streamer/AddMovieForm';
+import SeriesGrid from '@/components/streamer/SeriesGrid';
+import AddSeriesForm from '@/components/streamer/AddSeriesForm';
+import SeriesDetail from '@/components/streamer/SeriesDetail';
 import { launchVlc } from '@/lib/player';
 import VlcRemote from '@/components/streamer/VlcRemote';
+import { Series } from '@/types';
+
+type Tab = 'movies' | 'series' | 'add_movie' | 'add_series';
+type ViewMode = 'grid' | 'player' | 'detail';
 
 export default function StreamerPage() {
+
+
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [activeTab, setActiveTab] = useState<'stream' | 'add'>('stream');
-    const [viewMode, setViewMode] = useState<'grid' | 'player'>('grid');
+    const [activeTab, setActiveTabRaw] = useState<Tab>('movies');
+    const [viewMode, setViewMode] = useState<ViewMode>('grid');
+
     const [selectedMovie, setSelectedMovie] = useState<any>(null);
+    const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
+
     const [refreshKey, setRefreshKey] = useState(0);
     const [user, setUser] = useState('');
 
+    const setActiveTab = (tab: Tab) => {
+        setActiveTabRaw(tab);
+        setViewMode('grid');
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('auth_token');
@@ -28,36 +44,47 @@ export default function StreamerPage() {
         localStorage.removeItem('auth_token');
         setIsAuthenticated(false);
         setSelectedMovie(null);
+        setSelectedSeries(null);
         setViewMode('grid');
     };
 
     const handleMovieAdded = () => {
         setRefreshKey(prev => prev + 1);
-        setActiveTab('stream');
+        setActiveTab('movies');
+    };
+
+    const handleSeriesAdded = () => {
+        setRefreshKey(prev => prev + 1);
+        setActiveTab('series');
     };
 
     const handleMovieSelect = async (movie: any) => {
         setSelectedMovie(movie);
         setViewMode('player');
-
-        // This triggers the Shell Command we defined in lib/player.ts
         try {
             console.log(`Attempting to launch VLC for ID: ${movie.id}`);
-            await launchVlc(movie.id, movie.title);
+            await launchVlc(movie.id, movie.title, 'movie', movie.poster_path);
         } catch (error) {
             console.error("Failed to launch VLC:", error);
         }
     };
 
+    const handleSeriesSelect = (series: Series) => {
+        setSelectedSeries(series);
+        setViewMode('detail');
+    };
+
     const handleBackToGrid = () => {
         setViewMode('grid');
+        setSelectedMovie(null);
+        setSelectedSeries(null);
     };
 
     return (
         <div className="bg-gray-950 text-gray-100 min-h-screen flex flex-col font-sans">
             {!isAuthenticated && <AuthOverlay onLogin={() => setIsAuthenticated(true)} />}
 
-            {/* Header - Only show in Grid Mode or Add Mode */}
+            {/* Header - Show in Grid Mode */}
             {viewMode === 'grid' && (
                 <header className="bg-gray-900/50 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40">
                     <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -70,16 +97,28 @@ export default function StreamerPage() {
 
                         <nav className="hidden md:flex bg-gray-800 p-1 rounded-lg">
                             <button
-                                onClick={() => setActiveTab('stream')}
-                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'stream' ? 'bg-gray-700 text-white shadow shadow-black/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                onClick={() => setActiveTab('movies')}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'movies' ? 'bg-gray-700 text-white shadow shadow-black/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                             >
-                                Watch
+                                Movies
                             </button>
                             <button
-                                onClick={() => setActiveTab('add')}
-                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'add' ? 'bg-gray-700 text-white shadow shadow-black/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                onClick={() => setActiveTab('series')}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'series' ? 'bg-gray-700 text-white shadow shadow-black/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                Series
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('add_movie')}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'add_movie' ? 'bg-gray-700 text-white shadow shadow-black/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                             >
                                 Add Movie
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('add_series')}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'add_series' ? 'bg-gray-700 text-white shadow shadow-black/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                Add Series
                             </button>
                         </nav>
 
@@ -96,26 +135,33 @@ export default function StreamerPage() {
             {/* Content */}
             <main className={`flex-1 ${viewMode === 'grid' ? 'container mx-auto px-4 py-6' : 'h-screen w-full overflow-hidden'}`}>
                 {isAuthenticated && (
-                    activeTab === 'stream' ? (
-                        viewMode === 'grid' ? (
-                            <MovieGrid
-                                onSelect={handleMovieSelect}
-                                refreshTrigger={refreshKey}
-                            />
-                        ) : (
-                            <VlcRemote
-                                movie={selectedMovie}
-                                onBack={handleBackToGrid}
-                            />
-                        )
-                    ) : (
-                        <div className="max-w-4xl mx-auto">
-                            <AddMovieForm
-                                onSuccess={handleMovieAdded}
-                                onCancel={() => setActiveTab('stream')}
-                            />
-                        </div>
-                    )
+                    <>
+                        {activeTab === 'movies' && viewMode === 'grid' && (
+                            <MovieGrid onSelect={handleMovieSelect} refreshTrigger={refreshKey} />
+                        )}
+                        {activeTab === 'movies' && viewMode === 'player' && selectedMovie && (
+                            <VlcRemote movie={selectedMovie} onBack={handleBackToGrid} />
+                        )}
+
+                        {activeTab === 'series' && viewMode === 'grid' && (
+                            <SeriesGrid onSelect={handleSeriesSelect} refreshTrigger={refreshKey} />
+                        )}
+                        {activeTab === 'series' && viewMode === 'detail' && selectedSeries && (
+                            <SeriesDetail series={selectedSeries} onBack={handleBackToGrid} />
+                        )}
+
+                        {activeTab === 'add_movie' && (
+                            <div className="max-w-4xl mx-auto">
+                                <AddMovieForm onSuccess={handleMovieAdded} onCancel={() => setActiveTab('movies')} />
+                            </div>
+                        )}
+
+                        {activeTab === 'add_series' && (
+                            <div className="max-w-4xl mx-auto">
+                                <AddSeriesForm onSuccess={handleSeriesAdded} onCancel={() => setActiveTab('series')} />
+                            </div>
+                        )}
+                    </>
                 )}
             </main>
         </div>

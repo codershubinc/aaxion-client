@@ -38,3 +38,6 @@ export {
     removeToken,
     isAuthenticated,
 } from './authService';
+
+// Series Service
+export * from './seriesService';
