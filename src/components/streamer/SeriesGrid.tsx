@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { authenticatedFetch } from '@/lib/api';
 import { editSeries } from '@/services/seriesService';
-import { Search, ListVideo, Play, Loader2 } from 'lucide-react';
+import { Search, ListVideo, Play, Loader2, Star, Calendar } from 'lucide-react';
 import { Series } from '@/types';
 
 const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'get_your_dont_look_here';
@@ -16,6 +16,7 @@ export default function SeriesGrid({ onSelect, refreshTrigger }: SeriesGridProps
     const [seriesList, setSeriesList] = useState<Series[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
+    const [omdbCache, setOmdbCache] = useState<Record<string, any>>({});
     const processedIds = useRef(new Set<number>());
 
     useEffect(() => {
@@ -42,34 +43,87 @@ export default function SeriesGrid({ onSelect, refreshTrigger }: SeriesGridProps
         return () => clearTimeout(debounce);
     }, [query, refreshTrigger]);
 
+    // Load omdb cache on mount
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem('omdb_data_cache');
+            if (stored) {
+                setOmdbCache(JSON.parse(stored));
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }, []);
+
     // Auto-fetch missing posters
     useEffect(() => {
         if (loading || seriesList.length === 0) return;
 
-        const missingPosters = seriesList.filter(s => !s.poster_path && !processedIds.current.has(s.id));
-
-        missingPosters.forEach(async (series) => {
-            processedIds.current.add(series.id);
+        // Helper to access LocalStorage safely
+        const getOmdbCache = (): Record<string, any> => {
+            if (typeof window === 'undefined') return {};
             try {
-                const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(series.title)}&type=series`);
-                const data = await res.json();
+                const stored = localStorage.getItem('omdb_data_cache');
+                return stored ? JSON.parse(stored) : {};
+            } catch {
+                return {};
+            }
+        };
 
-                if (data.Response === 'True' && data.Poster && data.Poster !== 'N/A') {
-                    // Update backend
-                    await editSeries({
-                        id: series.id,
-                        title: series.title,
-                        description: series.description,
-                        poster_path: data.Poster
-                    });
-
-                    // Update local state
-                    setSeriesList(current =>
-                        current.map(s => s.id === series.id ? { ...s, poster_path: data.Poster } : s)
-                    );
-                }
+        const saveOmdbCache = (key: string, data: any) => {
+            if (typeof window === 'undefined') return;
+            try {
+                const cache = getOmdbCache();
+                cache[key] = data;
+                localStorage.setItem('omdb_data_cache', JSON.stringify(cache));
+                setOmdbCache(cache); // Update local state for UI
             } catch (e) {
-                console.error(`Failed to auto-fetch poster for ${series.title}`, e);
+                console.error("Failed to save omdb cache", e);
+            }
+        };
+
+        const listToProcess = seriesList.filter(s =>
+            !processedIds.current.has(s.id)
+        );
+
+        if (listToProcess.length === 0) return;
+
+        listToProcess.forEach(async (series) => {
+            processedIds.current.add(series.id);
+            const cacheKey = series.title.toLowerCase().trim();
+
+            let data;
+            const cache = getOmdbCache();
+
+            // Try to get from cache first
+            if (cache[cacheKey]) {
+                data = cache[cacheKey];
+            } else {
+                // Fetch from API if not in cache (only if poster is missing or we want to cache data)
+                // If we already have a poster we might skip, but user wants metadata so we fetch if not cached
+                try {
+                    const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(series.title)}&type=series`);
+                    data = await res.json();
+                    saveOmdbCache(cacheKey, data);
+                } catch (e) {
+                    console.error(`Failed to auto-fetch poster for ${series.title}`, e);
+                    return;
+                }
+            }
+
+            if (data && data.Response === 'True' && data.Poster && data.Poster !== 'N/A' && !series.poster_path) {
+                // Update backend only if poster was missing and we found one
+                await editSeries({
+                    id: series.id,
+                    title: series.title,
+                    description: series.description,
+                    poster_path: data.Poster
+                });
+
+                // Update local state
+                setSeriesList(current =>
+                    current.map(s => s.id === series.id ? { ...s, poster_path: data.Poster } : s)
+                );
             }
         });
     }, [seriesList, loading]);
@@ -134,16 +188,43 @@ export default function SeriesGrid({ onSelect, refreshTrigger }: SeriesGridProps
                                 </div>
 
                                 {/* Title & Info */}
-                                <div className="space-y-1 px-1">
+                                <div className="space-y-1.5 px-1 mt-2">
                                     <h3
-                                        className="text-gray-200 font-semibold text-sm md:text-base leading-tight line-clamp-2 group-hover:text-purple-400 transition-colors min-h-[2.5rem]"
+                                        className="text-gray-200 font-semibold text-sm md:text-base leading-tight line-clamp-1 group-hover:text-purple-400 transition-colors"
                                         title={s.title}
                                     >
                                         {s.title}
                                     </h3>
-                                    <p className="text-gray-500 text-xs truncate opacity-70">
-                                        Series • {new Date(s.created_at).getFullYear() || "Unknown"}
-                                    </p>
+
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        {omdbCache[s.title.toLowerCase().trim()]?.Year ? (
+                                            <span className="flex items-center gap-1 bg-white/5 px-1.5 py-0.5 rounded text-gray-400">
+                                                <Calendar className="w-3 h-3" />
+                                                {omdbCache[s.title.toLowerCase().trim()].Year.split('–')[0]}
+                                            </span>
+                                        ) : (
+                                            <span>{new Date(s.created_at).getFullYear() || "Unknown"}</span>
+                                        )}
+
+                                        {omdbCache[s.title.toLowerCase().trim()]?.imdbRating && omdbCache[s.title.toLowerCase().trim()]?.imdbRating !== "N/A" && (
+                                            <span className="flex items-center gap-1 text-yellow-500/80">
+                                                <Star className="w-3 h-3 fill-current" />
+                                                {omdbCache[s.title.toLowerCase().trim()].imdbRating}
+                                            </span>
+                                        )}
+
+                                        {omdbCache[s.title.toLowerCase().trim()]?.totalSeasons && omdbCache[s.title.toLowerCase().trim()]?.totalSeasons !== "N/A" && (
+                                            <span className="text-gray-600">
+                                                • {omdbCache[s.title.toLowerCase().trim()].totalSeasons} S
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {omdbCache[s.title.toLowerCase().trim()]?.Genre && (
+                                        <p className="text-[10px] text-gray-600 truncate">
+                                            {omdbCache[s.title.toLowerCase().trim()].Genre}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         ))}
