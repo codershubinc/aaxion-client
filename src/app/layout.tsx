@@ -73,7 +73,7 @@ export default function RootLayout({
                         }}
                     />
                     {/*  The Main Content Area   */}
-                    <div className="flex-1 w-full overflow-hidden relative">
+                    <div className="flex-1 w-full overflow-auto relative">
                         {children}
                     </div>
                 </AppProvider>

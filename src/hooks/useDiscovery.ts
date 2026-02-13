@@ -37,10 +37,10 @@ export const useDiscovery = () => {
 
     const selectServer = useCallback((server: ServerInfo) => {
         const url = getServerUrl(server);
-        setState(prev => ({ 
-            ...prev, 
-            selectedServer: server, 
-            serverUrl: url 
+        setState(prev => ({
+            ...prev,
+            selectedServer: server,
+            serverUrl: url
         }));
         localStorage.setItem("AAXION_SERVER_URL", url);
         toast.dismiss("discovery");
@@ -56,8 +56,9 @@ export const useDiscovery = () => {
         setState(prev => ({ ...prev, isScanning: true, error: null, availableServers: [] }));
 
         try {
+
             const servers = await invoke<ServerInfo[]>("discover_server");
-            
+
             console.log("Discovered Servers:", servers);
 
             if (servers.length === 0) {
@@ -81,10 +82,10 @@ export const useDiscovery = () => {
                 isScanning: false,
                 error: null
             });
-            
+
             // Auto-persist the primary found server
             localStorage.setItem("AAXION_SERVER_URL", firstUrl);
-            
+
             if (servers.length > 1) {
                 toast.success(`Found ${servers.length} servers`, { id: "discovery" });
             } else {
@@ -102,8 +103,10 @@ export const useDiscovery = () => {
         }
     }, []);
 
+    const isTauri: boolean = typeof window !== "undefined" && (window as any).__TAURI__;
+
     // Auto-scan on mount 
     useEffect(() => { scan(); }, [scan]);
 
-    return { ...state, scan, selectServer };
+    return { ...state, scan, selectServer, isTauri };
 };

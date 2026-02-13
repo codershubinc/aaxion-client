@@ -104,7 +104,9 @@ export default function SeriesGrid({ onSelect, refreshTrigger }: SeriesGridProps
                 try {
                     const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(series.title)}&type=series`);
                     data = await res.json();
-                    saveOmdbCache(cacheKey, data);
+                    if (data && data.Response === 'True') {
+                        saveOmdbCache(cacheKey, data);
+                    }
                 } catch (e) {
                     console.error(`Failed to auto-fetch poster for ${series.title}`, e);
                     return;

@@ -4,6 +4,7 @@ import { API_BASE, getToken } from '@/lib/api';
 import { MonitorPlay } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { setupVideoStreaming } from '@/lib/videoStreaming';
 
 interface Movie {
     id: number;
@@ -23,10 +24,12 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
 
     useEffect(() => {
         if (movie && videoRef.current) {
-            const token = getToken();
-            // Pass token in URL for direct streaming access (Auth Middleware must accept Query Params)
-            videoRef.current.src = `${API_BASE}/api/stream/movie?id=${movie.id}&tkn=${token}`;
-            videoRef.current.load();
+            const streamUrl = `${API_BASE}/api/stream/movie?id=${movie.id}`;
+
+            // Setup video with proper Range header support
+            setupVideoStreaming(videoRef.current, streamUrl, 'movie');
+
+            // Attempt autoplay
             videoRef.current.play().catch(e => console.log("Auto-play blocked"));
         }
     }, [movie]);
@@ -79,6 +82,8 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
                             <div className="absolute inset-0 z-0 pointer-events-none">
                                 <Image
                                     src={movie.poster_path}
+                                    width={1024}
+                                    height={576}
                                     className="w-full h-full object-cover opacity-20 blur-3xl scale-110 saturate-150"
                                     alt=""
                                 />
@@ -95,6 +100,7 @@ export default function VideoPlayer({ movie }: VideoPlayerProps) {
                                     className="w-full h-full object-contain focus:outline-none"
                                     controls
                                     controlsList="nodownload"
+
                                 />
                             </div>
                         </div>

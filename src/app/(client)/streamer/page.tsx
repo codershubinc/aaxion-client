@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useState } from 'react';
 import AuthOverlay from '@/components/streamer/AuthOverlay';
-import MovieGrid from '@/components/streamer/MovieGrid';
-import AddMovieForm from '@/components/streamer/AddMovieForm';
-import SeriesGrid from '@/components/streamer/SeriesGrid';
-import AddSeriesForm from '@/components/streamer/AddSeriesForm';
-import SeriesDetail from '@/components/streamer/SeriesDetail';
+import MovieGrid from '@/components/streamer/movies/MovieGrid';
+import AddMovieForm from '@/components/streamer/movies/AddMovieForm';
+import SeriesGrid from '@/components/streamer/series/SeriesGrid';
+import AddSeriesForm from '@/components/streamer/series/AddSeriesForm';
+import SeriesDetail from '@/components/streamer/series/SeriesDetail';
 import { launchVlc } from '@/lib/player';
-import VlcRemote from '@/components/streamer/VlcRemote';
+import VlcRemote from '@/components/streamer/handler/VlcRemote';
 import { Series } from '@/types';
 
 type Tab = 'movies' | 'series' | 'add_movie' | 'add_series';
