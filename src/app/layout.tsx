@@ -4,13 +4,18 @@
 */
 
 import type { Metadata } from "next";
-import { Inter, Dancing_Script } from "next/font/google";
+import { Inter, Dancing_Script, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AppProvider } from "@/context/AppContext";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const cursive = Dancing_Script({ subsets: ["latin"], weight: "700", variable: '--font-cursive' });
+const rajdhani = Rajdhani({
+    subsets: ["latin"],
+    weight: ["300", "400", "500", "600", "700"],
+    variable: '--font-rajdhani'
+});
 
 export const metadata: Metadata = {
     title: "Aaxion Drive - Personal Cloud Storage",
@@ -55,7 +60,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="dark">
-            <body className={`${inter.variable} ${cursive.variable} font-sans bg-[#121212] text-white overflow-hidden flex flex-col h-screen`}>
+            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans bg-[#121212] text-white overflow-hidden flex flex-col h-screen`}>
                 <AppProvider>
                     <Toaster
                         position="top-right"
@@ -68,7 +73,7 @@ export default function RootLayout({
                         }}
                     />
                     {/*  The Main Content Area   */}
-                    <div className="flex-1 w-full overflow-hidden relative">
+                    <div className="flex-1 w-full overflow-auto relative">
                         {children}
                     </div>
                 </AppProvider>

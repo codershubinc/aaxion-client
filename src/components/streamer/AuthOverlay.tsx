@@ -15,14 +15,15 @@ interface AuthOverlayProps {
 
 export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
     const { login: authLogin } = useAppState();
-    const { serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
+    const { isTauri, serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
     const [isServerListOpen, setIsServerListOpen] = useState(false);
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [manualServerUrl, setManualServerUrl] = useState("http://192.168.1.101:8080");
     const [isLoading, setIsLoading] = useState(false);
     const [isLogoMode, setIsLogoMode] = useState(true);
-    const [focusedField, setFocusedField] = useState<"username" | "password" | null>(null);
+    const [focusedField, setFocusedField] = useState<"username" | "password" | "server" | null>(null);
 
     const cardMouseX = useMotionValue(0);
     const cardMouseY = useMotionValue(0);
@@ -66,6 +67,20 @@ export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
             setIsLoading(false);
         }
     };
+    useEffect(() => {
+        if (!isTauri) {
+            const savedUrl = localStorage.getItem("AAXION_SERVER_URL");
+            if (savedUrl) {
+                setManualServerUrl(savedUrl);
+            }
+            toast.error("Not running in Tauri environment. Please enter server IP manually.", { id: "tauri-warning" });
+        }
+    }, [isTauri]);
+
+    const handleServerUrlChange = (url: string) => {
+        setManualServerUrl(url);
+        localStorage.setItem("AAXION_SERVER_URL", url);
+    };
 
     // Animation Variants
     const containerVariants = {
@@ -91,7 +106,7 @@ export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.5, type: "spring" as const, stiffness: 200 }}
                     >
-                        {isScanning ? (
+                        {!isTauri ? <p>not tauri</p> : mounted ? (
                             <>
                                 <RefreshCw className="w-3.5 h-3.5 text-yellow-500 animate-spin" />
                                 <span className="text-xs text-gray-400 font-mono font-medium tracking-wide">SCANNING NETWORK...</span>
@@ -112,10 +127,11 @@ export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
                         ) : (
                             <>
                                 <WifiOff className="w-3.5 h-3.5 text-red-500" />
-                                <span onClick={(e) => { e.stopPropagation(); scan(); }} className="text-xs text-red-500/90 font-mono font-medium hover:text-red-400 hover:underline tracking-wide cursor-pointer">
+                                <span onClick={(e) => { e.stopPropagation(); }} className="text-xs text-red-500/90 font-mono font-medium hover:text-red-400 hover:underline tracking-wide cursor-pointer">
                                     OFFLINE (RETRY)
                                 </span>
                             </>
+
                         )}
                     </motion.button>
 
@@ -261,6 +277,25 @@ export default function AuthOverlay({ onLogin }: AuthOverlayProps) {
                         </motion.div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
+                            {!isTauri && (
+                                <motion.div variants={itemVariants} className="space-y-2">
+                                    <label className="text-xs font-semibold text-gray-400 ml-1 uppercase tracking-wider">Server URL</label>
+                                    <div className="relative group/input">
+                                        <motion.div animate={{ color: focusedField === "server" ? "#3b82f6" : "#6b7280" }} className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors duration-200"><Wifi className="w-5 h-5" /></motion.div>
+                                        <input
+                                            type="text"
+                                            value={manualServerUrl}
+                                            onFocus={() => setFocusedField("server")}
+                                            onBlur={() => setFocusedField(null)}
+                                            onChange={(e) => handleServerUrlChange(e.target.value)}
+                                            className="w-full bg-[#0a0a0a] border border-[#2D2D2D] rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 placeholder:text-gray-700"
+                                            placeholder="http://192.168.x.x:8080"
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                </motion.div>
+                            )}
+
                             <motion.div variants={itemVariants} className="space-y-2">
                                 <label className="text-xs font-semibold text-gray-400 ml-1 uppercase tracking-wider">Username</label>
                                 <div className="relative group/input">

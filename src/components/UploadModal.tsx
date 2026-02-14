@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import { X, Upload, FileUp, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { uploadFile, uploadLargeFile } from '@/services';
 import { formatFileSize, isLocalNetwork } from '@/utils/fileUtils';
 import { useAppState } from '@/context/AppContext';
 

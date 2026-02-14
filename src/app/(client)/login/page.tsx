@@ -17,7 +17,7 @@ export default function LoginPage() {
     const { login: authLogin } = useAppState();
     const { isAuthenticated, isChecking } = useAuthCheck()
 
-    const { serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
+    const { isTauri, serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
     const [isServerListOpen, setIsServerListOpen] = useState(false);
 
     const [username, setUsername] = useState("");
@@ -348,6 +348,9 @@ export default function LoginPage() {
 
                         <motion.div variants={itemVariants} className="mt-8 text-center border-t border-[#2D2D2D] pt-6">
                             <p className="text-xs text-gray-500">Don&apos;t have an account? <span className="text-blue-500 hover:text-blue-400 cursor-pointer transition-colors" ><Link href={"/login/info"} >more info!!</Link></span></p>
+                            <Link
+                                href={"/streamer"}
+                            >login for streamer</Link>
                         </motion.div>
                     </div>
                 </div>

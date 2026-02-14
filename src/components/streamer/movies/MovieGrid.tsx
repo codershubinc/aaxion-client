@@ -1,7 +1,9 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { authenticatedFetch } from '@/lib/api';
-import { Search, Film, Play, Loader2 } from 'lucide-react';
+import { Search, Film, Play, Loader2, Star, Calendar } from 'lucide-react';
+
+const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'get_your_dont_look_here';
 
 interface Movie {
     id: number;
@@ -17,10 +19,22 @@ interface MovieGridProps {
     refreshTrigger: number;
 }
 
+async function editMovie(data: { id: number; title: string; description: string; poster_path?: string }) {
+    return authenticatedFetch('/api/movies/edit', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+}
+
 export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
+    const [omdbCache, setOmdbCache] = useState<Record<string, any>>({});
+    const processedIds = useRef(new Set<number>());
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -45,6 +59,88 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
         const debounce = setTimeout(fetchMovies, 300);
         return () => clearTimeout(debounce);
     }, [query, refreshTrigger]);
+
+    // Load omdb cache on mount
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem('omdb_data_cache');
+            if (stored) {
+                setOmdbCache(JSON.parse(stored));
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }, []);
+
+    // Auto-fetch missing posters
+    useEffect(() => {
+        if (loading || movies.length === 0) return;
+
+        // Helper to access LocalStorage safely
+        const getOmdbCache = (): Record<string, any> => {
+            if (typeof window === 'undefined') return {};
+            try {
+                const stored = localStorage.getItem('omdb_data_cache');
+                return stored ? JSON.parse(stored) : {};
+            } catch {
+                return {};
+            }
+        };
+
+        const saveOmdbCache = (key: string, data: any) => {
+            if (typeof window === 'undefined') return;
+            try {
+                const cache = getOmdbCache();
+                cache[key] = data;
+                localStorage.setItem('omdb_data_cache', JSON.stringify(cache));
+                setOmdbCache(cache); // Update local state
+            } catch (e) {
+                console.error("Failed to save omdb cache", e);
+            }
+        };
+
+        const listToProcess = movies.filter(m =>
+            !processedIds.current.has(m.id)
+        );
+
+        if (listToProcess.length === 0) return;
+
+        listToProcess.forEach(async (movie) => {
+            processedIds.current.add(movie.id);
+            const cacheKey = movie.title.toLowerCase().trim();
+
+            let data;
+            const cache = getOmdbCache();
+
+            if (cache[cacheKey]) {
+                data = cache[cacheKey];
+            } else {
+                try {
+                    const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(movie.title)}`); // Remove type=series for movies
+                    data = await res.json();
+                    saveOmdbCache(cacheKey, data);
+                } catch (e) {
+                    console.error(`Failed to auto-fetch poster for ${movie.title}`, e);
+                    return;
+                }
+            }
+
+            if (data && data.Response === 'True' && data.Poster && data.Poster !== 'N/A' && !movie.poster_path) {
+                // Update backend
+                await editMovie({
+                    id: movie.id,
+                    title: movie.title,
+                    description: movie.description,
+                    poster_path: data.Poster
+                });
+
+                // Update local state
+                setMovies(current =>
+                    current.map(m => m.id === movie.id ? { ...m, poster_path: data.Poster } : m)
+                );
+            }
+        });
+    }, [movies, loading]);
 
     return (
         <div className="flex flex-col h-full w-full">
@@ -106,16 +202,37 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                                 </div>
 
                                 {/* Title & Info Below */}
-                                <div className="space-y-1 px-1">
+                                <div className="space-y-1.5 px-1 mt-2">
                                     <h3
-                                        className="text-gray-200 font-semibold text-sm md:text-base leading-tight line-clamp-2 group-hover:text-blue-400 transition-colors min-h-[2.5rem]"
+                                        className="text-gray-200 font-semibold text-sm md:text-base leading-tight line-clamp-1 group-hover:text-blue-400 transition-colors"
                                         title={m.title}
                                     >
                                         {m.title}
                                     </h3>
-                                    <p className="text-gray-500 text-xs truncate opacity-70">
-                                        Movie • {new Date(m.created_at).getFullYear() || "Unknown"}
-                                    </p>
+
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        {omdbCache[m.title.toLowerCase().trim()]?.Year ? (
+                                            <span className="flex items-center gap-1 bg-white/5 px-1.5 py-0.5 rounded text-gray-400">
+                                                <Calendar className="w-3 h-3" />
+                                                {omdbCache[m.title.toLowerCase().trim()].Year.split('–')[0]}
+                                            </span>
+                                        ) : (
+                                            <span>{new Date(m.created_at).getFullYear() || "Unknown"}</span>
+                                        )}
+
+                                        {omdbCache[m.title.toLowerCase().trim()]?.imdbRating && omdbCache[m.title.toLowerCase().trim()]?.imdbRating !== "N/A" && (
+                                            <span className="flex items-center gap-1 text-yellow-500/80">
+                                                <Star className="w-3 h-3 fill-current" />
+                                                {omdbCache[m.title.toLowerCase().trim()].imdbRating}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {omdbCache[m.title.toLowerCase().trim()]?.Genre && (
+                                        <p className="text-[10px] text-gray-600 truncate">
+                                            {omdbCache[m.title.toLowerCase().trim()].Genre}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         ))}
