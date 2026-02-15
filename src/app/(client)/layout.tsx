@@ -18,7 +18,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return (
         <>
             {isTauri && <TitleBar />}
-            {children}
+            <div className={`pt-${isTauri ? '16' : '0'} h-full bg-none`}>
+                {children}
+            </div>
         </>
     );
 }
