@@ -1,4 +1,4 @@
-import { authenticatedFetch, API_BASE } from '../lib/api';
+import { authenticatedFetch, getApiBase } from '../lib/api';
 import { getToken } from './authService';
 import { uploadFile } from './uploadService';
 import { getSystemRootPath } from './systemService';
@@ -14,7 +14,8 @@ export async function searchSeries(query: string) {
 
 export async function addSeries(data: { title: string; description: string; poster_path?: string }) {
     const token = getToken();
-    const res = await fetch(`${API_BASE}/api/series/add`, {
+    const apiBase = getApiBase();
+    const res = await fetch(`${apiBase}/api/series/add`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -27,7 +28,8 @@ export async function addSeries(data: { title: string; description: string; post
 
 export async function editSeries(data: { id: number; title: string; description: string; poster_path?: string }) {
     const token = getToken();
-    const res = await fetch(`${API_BASE}/api/series/edit`, {
+    const apiBase = getApiBase();
+    const res = await fetch(`${apiBase}/api/series/edit`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -60,7 +62,8 @@ export async function addEpisode(
     await uploadFile(file, targetDir, onProgress);
 
     const token = getToken();
-    const res = await fetch(`${API_BASE}/api/series/episodes/add`, {
+    const apiBase = getApiBase();
+    const res = await fetch(`${apiBase}/api/series/episodes/add`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,

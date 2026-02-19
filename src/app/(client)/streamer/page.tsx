@@ -11,12 +11,15 @@ import VlcRemote from '@/components/streamer/handler/VlcRemote';
 import StreamerHeader from '@/components/streamer/StreamerHeader';
 import { useTitleBar } from '@/context/TitleBarContext';
 import { Series } from '@/types';
+import { useIp } from '@/hooks/useIp';
+import GetServerIp from '@/utils/getServerIp';
 
 type Tab = 'movies' | 'series' | 'add_movie' | 'add_series';
 type ViewMode = 'grid' | 'player' | 'detail';
 
 export default function StreamerPage() {
     const { setContent } = useTitleBar();
+    const { currentServerUrl } = useIp();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [activeTab, setActiveTabRaw] = useState<Tab>('movies');
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -84,7 +87,7 @@ export default function StreamerPage() {
         setViewMode('player');
         try {
             console.log(`Attempting to launch VLC for ID: ${movie.id}`);
-            await launchVlc(movie.id, movie.title, 'movie', movie.poster_path);
+            await launchVlc(movie.id, movie.title, 'movie', movie.poster_path, currentServerUrl || "");
         } catch (error) {
             console.error("Failed to launch VLC:", error);
         }
@@ -100,6 +103,8 @@ export default function StreamerPage() {
         setSelectedMovie(null);
         setSelectedSeries(null);
     };
+
+    console.log("JUST A INFO OF SERVERS", GetServerIp());
 
     return (
         <div className="bg-gray-950 text-gray-100 min-h-screen flex flex-col font-sans">

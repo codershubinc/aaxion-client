@@ -1,7 +1,8 @@
 import { getApiBaseUrl } from "@/config";
 
 // src/lib/api.ts
-export const API_BASE = getApiBaseUrl()
+// Dynamic API base URL getter
+export const getApiBase = () => getApiBaseUrl();
 
 export const getToken = () => {
     if (typeof window !== 'undefined') {
@@ -19,7 +20,8 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
         'Authorization': `Bearer ${token}`,
     };
 
-    const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
+    const apiBase = getApiBase(); // Get API base dynamically
+    const res = await fetch(`${apiBase}${url}`, { ...options, headers });
 
     if (res.status === 401) {
         if (typeof window !== 'undefined') {

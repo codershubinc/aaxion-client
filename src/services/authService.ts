@@ -1,5 +1,6 @@
 import { API_ENDPOINTS, getApiBaseUrl } from '@/config';
 import { Storage, createStoredServerInfo, type DiscoveredServer, type StoredServerInfo } from '@/constants';
+import { clearServerConnection, getStoredServerInfo as getServerInfo, getRecentServers as getRecentServersList } from '@/utils/serverConfig';
 import toast from 'react-hot-toast';
 
 interface LoginResponse {
@@ -114,21 +115,19 @@ export const storeServerInfoWithAuth = (
  * Get current stored server info
  */
 export const getStoredServerInfo = (): StoredServerInfo | null => {
-    return Storage.getServerInfo();
+    return getServerInfo();
 };
 
 /**
  * Get recent servers
  */
 export const getRecentServers = (): StoredServerInfo[] => {
-    return Storage.getRecentServers();
+    return getRecentServersList();
 };
 
 /**
  * Clear server info on logout
  */
 export const clearServerInfo = (): void => {
-    if (typeof window !== 'undefined') {
-        localStorage.removeItem(Storage.get('SERVER_INFO') || 'aaxion_server_info');
-    }
+    clearServerConnection();
 };

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import toast from "react-hot-toast";
 import { useIpContext } from "@/context/IpContext";
+import { API_ENDPOINTS } from "@/constants";
 
 export interface ServerInfo {
     hostname: string;
@@ -18,6 +19,40 @@ interface DiscoveryState {
     isScanning: boolean;
     error: string | null;
 }
+
+/**
+ * Test if an IP address is reachable by making a quick health check
+ */
+const testIpReachability = async (ip: string, port: number): Promise<boolean> => {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 500); // 500ms timeout
+
+        const testUrl = `http://${ip}:${port}${API_ENDPOINTS.SYSTEM.ROOT_PATH}`;
+        console.log(`🔍 Testing IP: ${ip} - ${testUrl}`);
+
+        // Get auth token from localStorage
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const headers: HeadersInit = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(testUrl, {
+            method: 'GET',
+            headers,
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        const isReachable = response.ok;
+        console.log(`${isReachable ? '✅' : '❌'} IP ${ip}: ${isReachable ? 'Reachable' : 'Unreachable'}`);
+        return isReachable;
+    } catch (error) {
+        console.log(`❌ IP ${ip}: Unreachable (${error instanceof Error ? error.message : 'timeout'})`);
+        return false;
+    }
+};
 
 export const useDiscovery = () => {
     const {
@@ -36,8 +71,8 @@ export const useDiscovery = () => {
         error: null,
     });
 
-    // Helper to extract a usable URL from ServerInfo with IP prioritization
-    const getServerUrl = (info: ServerInfo) => {
+    // Helper to extract a usable URL from ServerInfo with IP prioritization and reachability check
+    const getServerUrl = async (info: ServerInfo) => {
         // Prioritize IPs based on network type (higher score = better)
         const prioritizeIP = (ip: string): number => {
             // IPv6 addresses - lowest priority
@@ -54,21 +89,43 @@ export const useDiscovery = () => {
             return 60;
         };
 
-        // Filter and sort IPv4 addresses by priority
-        const sortedAddresses = [...info.addresses]
-            .map(addr => ({ addr, priority: prioritizeIP(addr) }))
+        // Filter IPv4 addresses and test reachability
+        const ipv4Addresses = info.addresses.filter(addr => !addr.includes(":"));
+
+        console.log(`🔎 Testing ${ipv4Addresses.length} IPv4 addresses for ${info.hostname}...`);
+
+        // Test all IPs in parallel
+        const reachabilityTests = await Promise.all(
+            ipv4Addresses.map(async (ip) => ({
+                ip,
+                priority: prioritizeIP(ip),
+                reachable: await testIpReachability(ip, info.port)
+            }))
+        );
+
+        // Filter to only reachable IPs and sort by priority
+        const reachableIPs = reachabilityTests
+            .filter(test => test.reachable)
             .sort((a, b) => b.priority - a.priority);
 
-        const bestIP = sortedAddresses[0]?.addr || info.addresses[0];
+        if (reachableIPs.length === 0) {
+            console.warn(`⚠️ No reachable IPs found for ${info.hostname}, using highest priority`);
+            // Fallback to highest priority if none are reachable
+            const fallback = reachabilityTests
+                .sort((a, b) => b.priority - a.priority)[0];
+            return `http://${fallback.ip}:${info.port}`;
+        }
 
-        console.log(`🎯 Selected IP for ${info.hostname}: ${bestIP} (priority: ${sortedAddresses[0]?.priority})`);
-        console.log(`   Available IPs:`, sortedAddresses.map(s => `${s.addr} (${s.priority})`));
+        const bestIP = reachableIPs[0].ip;
+
+        console.log(`🎯 Selected IP for ${info.hostname}: ${bestIP} (priority: ${reachableIPs[0].priority})`);
+        console.log(`   Reachable IPs:`, reachableIPs.map(s => `${s.ip} (${s.priority})`));
 
         return `http://${bestIP}:${info.port}`;
     };
 
-    const selectServer = useCallback((server: ServerInfo) => {
-        const url = getServerUrl(server);
+    const selectServer = useCallback(async (server: ServerInfo) => {
+        const url = await getServerUrl(server);
 
         // Update discovery state
         setState(prev => ({
@@ -120,7 +177,7 @@ export const useDiscovery = () => {
 
             // Default to the first one found
             const firstServer = servers[0];
-            const firstUrl = getServerUrl(firstServer);
+            const firstUrl = await getServerUrl(firstServer);
 
             setState({
                 availableServers: servers,

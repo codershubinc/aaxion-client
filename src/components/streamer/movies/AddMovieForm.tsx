@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { API_BASE, getToken } from '@/lib/api';
+import { getApiBase, getToken } from '@/lib/api';
 import { Upload, Loader2, Search } from 'lucide-react';
 import { uploadFile, getSystemRootPath } from '@/services';
 import { formatFileSize } from '@/utils/fileUtils';
@@ -74,7 +74,8 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
                 poster_path: formData.get('poster_path')
             };
 
-            const dbRes = await fetch(`${API_BASE}/api/movies/add`, {
+            const apiBase = getApiBase();
+            const dbRes = await fetch(`${apiBase}/api/movies/add`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
