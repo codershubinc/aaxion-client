@@ -1,4 +1,5 @@
 import { API_ENDPOINTS, getApiBaseUrl } from '@/config';
+import { Storage, createStoredServerInfo, type DiscoveredServer, type StoredServerInfo } from '@/constants';
 import toast from 'react-hot-toast';
 
 interface LoginResponse {
@@ -83,4 +84,51 @@ export const removeToken = () => {
 export const isAuthenticated = (): boolean => {
     const token = getToken();
     return !!token;
+};
+
+/**
+ * Store server info with authentication after successful login
+ */
+export const storeServerInfoWithAuth = (
+    server: DiscoveredServer,
+    authToken: string,
+    username: string,
+    serverUrl: string
+): void => {
+    const serverInfo = createStoredServerInfo(server, authToken, username);
+    serverInfo.url = serverUrl;
+
+    // Store current server info
+    Storage.setServerInfo(serverInfo);
+
+    // Add to recent servers
+    Storage.addRecentServer(serverInfo);
+
+    // Also store username separately for backwards compatibility
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('aaxion_user', username);
+    }
+};
+
+/**
+ * Get current stored server info
+ */
+export const getStoredServerInfo = (): StoredServerInfo | null => {
+    return Storage.getServerInfo();
+};
+
+/**
+ * Get recent servers
+ */
+export const getRecentServers = (): StoredServerInfo[] => {
+    return Storage.getRecentServers();
+};
+
+/**
+ * Clear server info on logout
+ */
+export const clearServerInfo = (): void => {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem(Storage.get('SERVER_INFO') || 'aaxion_server_info');
+    }
 };

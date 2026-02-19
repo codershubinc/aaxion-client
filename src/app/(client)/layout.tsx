@@ -1,6 +1,8 @@
 'use client';
 
 import TitleBar from '@/components/TitleBar';
+import { TitleBarProvider } from '@/context/TitleBarContext';
+import { IpProvider } from '@/context/IpContext';
 import { useEffect, useState } from 'react';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -16,11 +18,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }, []);
 
     return (
-        <>
-            {isTauri && <TitleBar />}
-            <div className={`pt-${isTauri ? '16' : '0'} h-full bg-none`}>
-                {children}
-            </div>
-        </>
+        <IpProvider>
+            <TitleBarProvider>
+                {isTauri && <TitleBar />}
+                <div className={`pt-${isTauri ? '16' : '0'} h-full bg-none`}>
+                    {children}
+                </div>
+            </TitleBarProvider>
+        </IpProvider>
     );
 }

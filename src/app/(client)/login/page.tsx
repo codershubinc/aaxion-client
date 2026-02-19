@@ -5,19 +5,21 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useMotionTemplate } from "framer-motion";
 import { Zap, Loader2, Lock, User, ArrowRight, Wifi, WifiOff, RefreshCw, ChevronDown, Monitor } from "lucide-react";
 import toast from "react-hot-toast";
-import { login } from "@/services";
+import { login, storeServerInfoWithAuth } from "@/services";
 import { useAppState } from "@/context/AppContext";
 import Link from "next/link";
 import Drone from "@/components/Drone";
 import { useDiscovery, ServerInfo } from "@/hooks/useDiscovery";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { useIp } from "@/hooks/useIp";
 
 export default function LoginPage() {
     const router = useRouter();
     const { login: authLogin } = useAppState();
     const { isAuthenticated, isChecking } = useAuthCheck()
 
-    const { isTauri, serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
+    const { serverUrl, isScanning, scan, availableServers, selectServer, selectedServer } = useDiscovery();
+    const { currentSelectedIp, currentServerName, isConnected } = useIp();
     const [isServerListOpen, setIsServerListOpen] = useState(false);
 
     const [username, setUsername] = useState("");
@@ -35,13 +37,9 @@ export default function LoginPage() {
     }, []);
 
     useEffect(() => {
-        scan();
-    }, [scan]);
-
-    useEffect(() => {
-        if (isChecking) <><div>Loading ...</div></>;
-        if (isAuthenticated && !isChecking) {
-            router.push("/d");
+        if (isChecking) return;
+        if (isAuthenticated) {
+            router.push("/");
         }
     }, [isAuthenticated, router, isChecking]);
 
@@ -66,12 +64,27 @@ export default function LoginPage() {
             toast.error("Please enter both username and password");
             return;
         }
+
+        if (!selectedServer) {
+            toast.error("No server selected. Please scan for servers.");
+            return;
+        }
+
         setIsLoading(true);
         try {
             const response = await login(username, password);
             authLogin(response.token);
+
+            // Store server info with authentication
+            storeServerInfoWithAuth(
+                selectedServer,
+                response.token,
+                username,
+                serverUrl || ''
+            );
+
             toast.success("Login successful");
-            router.push("/d");
+            router.push("/");
         } catch (error: any) {
             toast.error(error.message || "Login failed");
         } finally {
@@ -92,6 +105,28 @@ export default function LoginPage() {
 
     return (
         <div className="relative min-h-screen bg-[#050505] flex items-center justify-center p-4 overflow-hidden">
+
+            {/* --- SELECTED IP DISPLAY (Top Right) --- */}
+            {mounted && isConnected && (
+                <motion.div
+                    className="absolute top-6 right-6 z-50 px-4 py-2 rounded-full bg-[#0a0a0a]/80 backdrop-blur-md border border-[#2D2D2D] shadow-xl"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                >
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <div className="flex flex-col">
+                            <span className="text-[10px] text-gray-500 font-medium leading-none mb-0.5">
+                                Server: {currentServerName}
+                            </span>
+                            <span className="text-xs text-gray-300 font-mono font-medium leading-none">
+                                {currentSelectedIp}
+                            </span>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
 
             {/* --- SERVER STATUS INDICATOR (Top Left) --- */}
             {mounted && (
@@ -157,7 +192,7 @@ export default function LoginPage() {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className={`text-xs font-bold ${selectedServer?.fullname === srv.fullname ? "text-blue-400" : "text-gray-200"}`}>
-                                                {srv.hostname}
+                                                {srv.txt.device_name || srv.hostname.replace('.local.', '')}
                                             </span>
                                             <span className="text-[10px] text-gray-500 font-mono">
                                                 {srv.addresses[0]}:{srv.port}
@@ -348,9 +383,6 @@ export default function LoginPage() {
 
                         <motion.div variants={itemVariants} className="mt-8 text-center border-t border-[#2D2D2D] pt-6">
                             <p className="text-xs text-gray-500">Don&apos;t have an account? <span className="text-blue-500 hover:text-blue-400 cursor-pointer transition-colors" ><Link href={"/login/info"} >more info!!</Link></span></p>
-                            <Link
-                                href={"/streamer"}
-                            >login for streamer</Link>
                         </motion.div>
                     </div>
                 </div>
