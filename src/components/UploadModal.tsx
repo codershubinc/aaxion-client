@@ -231,18 +231,6 @@ export default function UploadModal({ isOpen, onClose, currentPath, onUploadComp
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, showMinimized, handleClose, isUploading, onClose]);
 
-    // Handle Escape key
-    React.useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isOpen && !showMinimized) {
-                handleClose();
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, showMinimized, handleClose]);
-
     const toggleMinimize = () => {
         if (isUploading) {
             setShowMinimized(!showMinimized);

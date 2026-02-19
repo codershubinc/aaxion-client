@@ -29,11 +29,11 @@
 import {
     STORAGE_KEYS,
     SERVER,
-    API_ENDPOINTS,
     type StoredServerInfo,
     buildServerUrl,
     getNetworkPriority
 } from '@/constants';
+import { API_ENDPOINTS } from '@/config/api';
 
 /**
  * Get stored server info from localStorage

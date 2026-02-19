@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import toast from "react-hot-toast";
 import { useIpContext } from "@/context/IpContext";
-import { API_ENDPOINTS } from "@/constants";
+import { API_ENDPOINTS } from "@/config/api";
 
 export interface ServerInfo {
     hostname: string;

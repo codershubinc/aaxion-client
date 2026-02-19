@@ -21,7 +21,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <IpProvider>
             <TitleBarProvider>
                 {isTauri && <TitleBar />}
-                <div className={`pt-${isTauri ? '16' : '0'} h-full bg-none`}>
+                <div className={isTauri ? 'pt-24 h-full bg-transparent' : 'h-full bg-transparent'}>
                     {children}
                 </div>
             </TitleBarProvider>

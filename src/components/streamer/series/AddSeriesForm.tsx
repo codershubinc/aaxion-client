@@ -43,17 +43,13 @@ export default function AddSeriesForm({ onSuccess, onCancel }: AddSeriesFormProp
         setLoading(true);
 
         try {
-            const res = await addSeries({
+            await addSeries({
                 title,
                 description,
                 poster_path: posterPath
             });
 
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert('Failed to create series');
-            }
+            onSuccess();
         } catch (error) {
             console.error(error);
             alert('Error creating series');

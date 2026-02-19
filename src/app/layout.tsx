@@ -60,7 +60,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="dark">
-            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans   text-white overflow-hidden flex flex-col h-screen  rounded-md bg-gradient-to-br from-slate-800 to-gray-900`}>
+            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white overflow-hidden flex flex-col h-screen rounded-md bg-[#050505]`}>
                 <AppProvider>
                     <Toaster
                         position="top-right"
