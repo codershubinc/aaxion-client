@@ -63,7 +63,7 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
     const [showFloatingSearch, setShowFloatingSearch] = useState(false);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    const filteredMovies = movies.filter(m => 
+    const filteredMovies = movies.filter(m =>
         m.title.toLowerCase().includes(query.toLowerCase())
     );
 
