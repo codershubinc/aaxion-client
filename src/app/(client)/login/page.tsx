@@ -64,7 +64,7 @@ export default function LoginPage() {
                         className={`flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a0a0a]/80 backdrop-blur-md border border-[#2D2D2D] hover:bg-[#0a0a0a] transition-all shadow-xl ${availableServers.length > 1 ? "cursor-pointer active:scale-95" : ""}`}
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                        transition={{ delay: 0.5, type: "spring" as const, stiffness: 200 }}
                     >
                         {isScanning ? (
                             <>

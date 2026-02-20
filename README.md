@@ -223,7 +223,9 @@ colors: {
 
 ## License
 
-MIT License - See LICENSE file for details
+Aaxion Web is free software licensed under the [GNU Affero General Public License v3.0](LICENSE).
+Copyright (C) 2026 Swapnil Ingle.
+
 
 ## Contributing
 
