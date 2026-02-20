@@ -71,4 +71,5 @@ export const SERVER = {
         HTTP: 'http',
         HTTPS: 'https',
     },
+    URL: 'server_url'
 } as const;

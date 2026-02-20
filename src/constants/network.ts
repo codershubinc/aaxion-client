@@ -11,6 +11,9 @@ export const NETWORK = {
         /** Other local networks */
         SECONDARY_LOCAL: '192.168.',
 
+        /** 10.x.x.x local networks */
+        TEN_LOCAL: '10.0.0.',
+
         /** Localhost */
         LOCALHOST: '127.0.0.1',
     },
@@ -20,6 +23,7 @@ export const NETWORK = {
         ETHERNET: 100,
         WIFI_PRIMARY: 50,
         WIFI_SECONDARY: 40,
+        TEN_LOCAL: 100,
         LOCALHOST: 10,
     },
 

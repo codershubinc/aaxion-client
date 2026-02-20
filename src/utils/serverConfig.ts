@@ -34,6 +34,8 @@ import {
     getNetworkPriority
 } from '@/constants';
 import { API_ENDPOINTS } from '@/config/api';
+import { useDiscovery } from '@/hooks/useDiscovery';
+import getServerUrl from './serverUrlWithLiveChecks';
 
 /**
  * Get stored server info from localStorage
@@ -246,16 +248,21 @@ export const getConnectedServerUrlWithCheck = async (): Promise<string | null> =
  * 4. Window location hostname
  * 5. Default fallback
  */
-export const getApiBaseUrl = (): string => {
+export const getApiBaseUrl = async (): Promise<string> => {
     if (typeof window === 'undefined') {
         return buildServerUrl(SERVER.DEFAULT_IP, SERVER.PORT);
     }
 
-    // Priority 1: Get connected server URL
-    const connectedServerUrl = getConnectedServerUrl();
-    if (connectedServerUrl) {
-        return connectedServerUrl;
+
+
+
+    const currentServer = localStorage.getItem(STORAGE_KEYS.SERVER_INFO) ? JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVER_INFO)!) : null;
+    if (currentServer) {
+        return await getServerUrl(currentServer);
     }
+
+
+    /// fuck below --- i don't know the fuck that ai given
 
     // Priority 2: Legacy AAXION_SERVER_URL (for backward compatibility)
     const storedUrl = localStorage.getItem(STORAGE_KEYS.SERVER_URL);

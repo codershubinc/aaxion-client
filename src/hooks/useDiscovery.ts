@@ -72,7 +72,7 @@ export const useDiscovery = () => {
     });
 
     // Helper to extract a usable URL from ServerInfo with IP prioritization and reachability check
-    const getServerUrl = async (info: ServerInfo) => {
+     const getServerUrl = async (info: ServerInfo) => {
         // Prioritize IPs based on network type (higher score = better)
         const prioritizeIP = (ip: string): number => {
             // IPv6 addresses - lowest priority
@@ -241,5 +241,5 @@ export const useDiscovery = () => {
         scan();
     }, [scan]);
 
-    return { ...state, scan, selectServer };
+    return { ...state, scan, selectServer , getServerUrl };
 };

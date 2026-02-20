@@ -13,6 +13,8 @@ import { useTitleBar } from '@/context/TitleBarContext';
 import { Series } from '@/types';
 import { useIp } from '@/hooks/useIp';
 import GetServerIp from '@/utils/getServerIp';
+import { useDiscovery } from '@/hooks/useDiscovery';
+import { STORAGE_KEYS } from '@/constants';
 
 type Tab = 'movies' | 'series' | 'add_movie' | 'add_series';
 type ViewMode = 'grid' | 'player' | 'detail';
@@ -20,6 +22,7 @@ type ViewMode = 'grid' | 'player' | 'detail';
 export default function StreamerPage() {
     const { setContent } = useTitleBar();
     const { currentServerUrl } = useIp();
+    const { getServerUrl } = useDiscovery()
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [activeTab, setActiveTabRaw] = useState<Tab>('movies');
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -36,6 +39,8 @@ export default function StreamerPage() {
     };
 
     useEffect(() => {
+        console.log("UseDiscovery", getServerUrl(JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVER_INFO) || '{}')));
+
         const token = localStorage.getItem('auth_token');
         const username = localStorage.getItem('aaxion_user');
         if (token) {
@@ -87,7 +92,7 @@ export default function StreamerPage() {
         setViewMode('player');
         try {
             console.log(`Attempting to launch VLC for ID: ${movie.id}`);
-            await launchVlc(movie.id, movie.title, 'movie', movie.poster_path, currentServerUrl || "");
+            await launchVlc(movie.id, movie.title, 'movie', movie.poster_path, await getServerUrl(JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVER_INFO) || '{}')));
         } catch (error) {
             console.error("Failed to launch VLC:", error);
         }

@@ -39,7 +39,7 @@ export const useIp = () => {
         return {
             name: currentServerName || "Unknown Server",
             ip: currentSelectedIp || "N/A",
-            port: currentServerPort || "80",
+            port: currentServerPort || "8080",
             url: currentServerUrl || "",
         };
     }, [isConnected, currentServerName, currentSelectedIp, currentServerPort, currentServerUrl]);

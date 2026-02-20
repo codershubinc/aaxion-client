@@ -36,6 +36,9 @@ export const buildVlcUrl = (endpoint: string): string => {
  * Get network priority based on IP address
  */
 export const getNetworkPriority = (ip: string): number => {
+    if (ip.startsWith(NETWORK.IP_RANGES.TEN_LOCAL)) {
+        return NETWORK.PRIORITY.TEN_LOCAL;
+    }
     if (ip.startsWith(NETWORK.IP_RANGES.PRIMARY_LOCAL)) {
         return NETWORK.PRIORITY.WIFI_PRIMARY;
     }
@@ -53,6 +56,7 @@ export const getNetworkPriority = (ip: string): number => {
  */
 export const isLocalNetwork = (ip: string): boolean => {
     return (
+        ip.startsWith(NETWORK.IP_RANGES.TEN_LOCAL) ||
         ip.startsWith(NETWORK.IP_RANGES.PRIMARY_LOCAL) ||
         ip.startsWith(NETWORK.IP_RANGES.SECONDARY_LOCAL) ||
         ip === NETWORK.IP_RANGES.LOCALHOST

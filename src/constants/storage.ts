@@ -26,4 +26,6 @@ export const STORAGE_KEYS = {
 
     /** Recent servers list */
     RECENT_SERVERS: 'aaxion_recent_servers',
+
+
 } as const;
