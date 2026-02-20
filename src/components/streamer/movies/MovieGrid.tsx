@@ -1,9 +1,14 @@
 "use client";
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, use } from 'react';
 import apiClient from '@/services/apiClient';
-import { Search, Film, Play, Loader2, Star, Calendar } from 'lucide-react';
+import { Search, Film, Play, Loader2, Star, Calendar, MoreVertical, Copy, QrCode } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useOmdbCache } from '@/hooks/useOmdbCache';
 import Image from 'next/image';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { getToken } from '@/services';
+import getServerUrl from '@/utils/serverUrlWithLiveChecks';
+import { STORAGE_KEYS } from '@/constants';
 
 interface Movie {
     id: number;
@@ -27,6 +32,8 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
+    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+    const [qrUrl, setQrUrl] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -39,7 +46,6 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                 setLoading(false);
             }
         };
-
         fetchMovies();
     }, [refreshTrigger]);
 
@@ -67,6 +73,72 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
         m.title.toLowerCase().includes(query.toLowerCase())
     );
 
+    const handleCopyStream = async (movie: Movie) => {
+        if (movie.file_path) {
+            try {
+                const apiBase = await getServerUrl(JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVER_INFO) || '{}'));
+                const token = getToken();
+                const endpoint = '/api/stream/movie';
+                const streamUrl = `${apiBase}${endpoint}?id=${movie.id}&tkn=${token}`;
+
+                // Try Tauri native clipboard first
+                try {
+                    await writeText(streamUrl);
+                    toast.success('Stream URL copied');
+                    return;
+                } catch (tauriErr) {
+                    console.log("Tauri clipboard failed, falling back to web API", tauriErr);
+                }
+
+                // Fallback for web environments
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(streamUrl);
+                } else {
+                    // Create a temporary textarea to copy from
+                    const textArea = document.createElement("textarea");
+                    textArea.value = streamUrl;
+                    // Move textarea out of viewport
+                    textArea.style.position = "absolute";
+                    textArea.style.left = "-999999px";
+                    document.body.prepend(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                    } catch (error) {
+                        console.error(error);
+                        throw new Error("Fallback copy failed");
+                    } finally {
+                        textArea.remove();
+                    }
+                }
+                toast.success('Stream URL copied');
+            } catch (e) {
+                toast.error('Failed to copy URL');
+                console.error(e);
+            }
+        }
+    };
+
+    // if there were a server-side endpoint that returns the contents of a scanned QR (for demo we just use file path)
+    const handleScanQr = async (movie: Movie) => {
+        try {
+            const apiBase = await getServerUrl(JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVER_INFO) || '{}'));
+            const token = getToken();
+            const endpoint = '/api/stream/movie';
+            const streamUrl = `${apiBase}${endpoint}?id=${movie.id}&tkn=${token}`;
+            const url = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(streamUrl)}`;
+            setQrUrl(url);
+        } catch (err) {
+            // fallback to simple generated QR
+            const data = movie.file_path || movie.title;
+            const url = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data)}`;
+            setQrUrl(url);
+            toast.error('Failed to scan QR, showing default');
+        }
+    };
+
+    const closeQr = () => setQrUrl(null);
+
     useEffect(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
@@ -82,6 +154,18 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
         container.addEventListener('scroll', handleScroll);
         return () => container.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // close options menu when user clicks anywhere else
+    useEffect(() => {
+        const handleDocClick = () => setOpenMenuId(null);
+        document.addEventListener('click', handleDocClick);
+        return () => document.removeEventListener('click', handleDocClick);
+    }, []);
+    useEffect(() => {
+        console.log("m.id", openMenuId);
+
+
+    }, [openMenuId]);
 
     return (
         <div className="flex flex-col h-full w-full relative">
@@ -120,8 +204,47 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                             <div
                                 key={m.id}
                                 onClick={() => onSelect(m)}
-                                className="group flex flex-col gap-3 cursor-pointer bg-transparent"
+                                className="group flex flex-col gap-3 cursor-pointer bg-transparent relative"
                             >
+                                {/* options menu trigger */}
+                                <div className="absolute top-2 right-2 z-50">
+                                    <button
+                                        type="button"
+                                        onClick={e => {
+                                            console.log("clicked more btn", m.id);
+
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            // Use a timeout to prevent the document click listener from immediately closing it
+                                            setTimeout(() => {
+                                                setOpenMenuId(prev => prev === m.id ? null : m.id);
+                                            }, 0);
+                                        }}
+                                        className="p-1.5 bg-black/50 rounded-full text-gray-300 hover:text-white hover:bg-black/80 transition-colors backdrop-blur-sm"
+                                    >
+                                        <MoreVertical className="w-5 h-5" />
+                                    </button>
+                                    {openMenuId === m.id && (
+                                        <div className="absolute right-0 mt-2 w-36 bg-black/90 text-white rounded-lg shadow-lg z-[60] border border-white/10 overflow-hidden">
+                                            <button
+                                                type="button"
+                                                onClick={e => { e.preventDefault(); e.stopPropagation(); handleCopyStream(m); setOpenMenuId(null); }}
+                                                className="flex items-center gap-2 w-full text-left px-4 py-2.5 hover:bg-white/10 transition-colors text-sm"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                                Copy stream
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={e => { e.preventDefault(); e.stopPropagation(); handleScanQr(m); setOpenMenuId(null); }}
+                                                className="flex items-center gap-2 w-full text-left px-4 py-2.5 hover:bg-white/10 transition-colors text-sm"
+                                            >
+                                                <QrCode className="w-4 h-4" />
+                                                Scan QR
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                                 {/* Poster Card */}
                                 <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 shadow-xl ring-1 ring-white/5 transition-all duration-300 group-hover:ring-blue-500/50 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] group-hover:scale-[1.03]">
                                     {m.poster_path ? (
@@ -203,6 +326,19 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                     />
                 </div>
             </div>
+
+            {/* QR overlay bottom-right */}
+            {qrUrl && (
+                <div className="fixed bottom-4 right-4 z-60 bg-black/80 p-3 rounded-lg flex flex-col items-center">
+                    <img src={qrUrl} alt="QR code" className="w-36 h-36" />
+                    <button
+                        onClick={closeQr}
+                        className="mt-2 text-xs text-white/80 hover:text-white"
+                    >
+                        Close
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

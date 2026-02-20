@@ -33,7 +33,7 @@ fn discover_server() -> Result<Vec<ServerInfo>, String> {
 
     let mut servers = Vec::new();
     let mut seen_fullnames = HashSet::new(); // Faster deduplication
-    
+
     // 3. Scan duration (Reduced to 1.5s for snappier UI, usually sufficient)
     let start = Instant::now();
     let timeout = Duration::from_millis(1500);
@@ -94,6 +94,7 @@ fn discover_server() -> Result<Vec<ServerInfo>, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         // 👇 REGISTER THE COMMAND HERE

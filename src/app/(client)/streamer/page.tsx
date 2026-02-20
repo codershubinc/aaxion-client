@@ -11,7 +11,6 @@ import VlcRemote from '@/components/streamer/handler/VlcRemote';
 import StreamerHeader from '@/components/streamer/StreamerHeader';
 import { useTitleBar } from '@/context/TitleBarContext';
 import { Series } from '@/types';
-import { useIp } from '@/hooks/useIp';
 import GetServerIp from '@/utils/getServerIp';
 import { useDiscovery } from '@/hooks/useDiscovery';
 import { STORAGE_KEYS } from '@/constants';
@@ -21,7 +20,6 @@ type ViewMode = 'grid' | 'player' | 'detail';
 
 export default function StreamerPage() {
     const { setContent } = useTitleBar();
-    const { currentServerUrl } = useIp();
     const { getServerUrl } = useDiscovery()
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [activeTab, setActiveTabRaw] = useState<Tab>('movies');
