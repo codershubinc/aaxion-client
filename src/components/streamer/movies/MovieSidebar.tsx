@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { authenticatedFetch } from '@/lib/api';
+import apiClient from '@/services/apiClient';
 import { Search, Film } from 'lucide-react';
 
 interface Movie {
@@ -29,11 +29,8 @@ export default function MovieSidebar({ onSelect, selectedId, refreshTrigger }: M
                 : `/api/movies/list`;
 
             try {
-                const res = await authenticatedFetch(endpoint);
-                if (res.ok) {
-                    const data = await res.json();
-                    setMovies(data || []);
-                }
+                const res = await apiClient.get(endpoint);
+                setMovies(res.data || []);
             } catch (e) {
                 console.error(e);
             }

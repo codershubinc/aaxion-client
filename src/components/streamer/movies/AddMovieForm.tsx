@@ -1,7 +1,8 @@
 "use client";
 import { useState } from 'react';
-import { API_BASE, getToken } from '@/lib/api';
+import apiClient from '@/services/apiClient';
 import { Upload, Loader2, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { uploadFile, getSystemRootPath } from '@/services';
 import { formatFileSize } from '@/utils/fileUtils';
 
@@ -26,8 +27,15 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
         if (!formTitle) return alert("Please enter a title first");
         setIsSearching(true);
         try {
-            const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(formTitle)}`);
-            const data = await res.json();
+            const res = await apiClient.get(`https://www.omdbapi.com/`, {
+                params: {
+                    apikey: OMDB_API_KEY,
+                    t: formTitle,
+                },
+                // disable baseURL so it uses absolute URL
+                baseURL: '',
+            });
+            const data = res.data;
 
             if (data.Response === 'True') {
                 setFormTitle(data.Title);
@@ -51,7 +59,6 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
 
         const formData = new FormData(e.currentTarget);
         const file = formData.get('file') as File;
-        const token = getToken();
 
         try {
             // 1. Get Root Path from backend
@@ -65,7 +72,7 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
                 setUploadSpeed(speed || 0);
             });
 
-            // 3. Add Metadata to DB
+            // 3. Add Metadata to DB (using shared apiClient)
             const metaData = {
                 title: formData.get('title'),
                 file_id: 0,
@@ -74,18 +81,26 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
                 poster_path: formData.get('poster_path')
             };
 
-            const dbRes = await fetch(`${API_BASE}/api/movies/add`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(metaData)
-            });
+            await apiClient.post('/api/movies/add', metaData);
 
-            if (!dbRes.ok) throw new Error('Failed to save metadata');
-
-            alert('Movie Added!');
+            toast.success('Movie added successfully');
+            // desktop/browser notification
+            try {
+                const showNotif = () => new Notification('Movie Uploaded', {
+                    body: `${metaData.title} was added to your library`,
+                });
+                if (typeof Notification !== 'undefined') {
+                    if (Notification.permission === 'granted') {
+                        showNotif();
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission().then(p => {
+                            if (p === 'granted') showNotif();
+                        });
+                    }
+                }
+            } catch {
+                // ignore
+            }
             onSuccess();
         } catch (err: any) {
             alert(err.message);

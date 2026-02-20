@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { Folder, Download, Video, Github, FileText, Music, Image } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { viewFiles, downloadFile, requestTempShare, getSystemRootPath } from '@/services';
 import type { FileItem } from '@/types';
-import { isImageFile } from '@/utils/fileUtils';
+import { isImageFile, getImportantFolders } from '@/utils/fileUtils';
 import ImagePreview from '../ImagePreview';
 
 import ExplorerHeader from './ExplorerHeader';
@@ -104,54 +103,13 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
             const fullUrl = `${shareLink.baseUri}${shareLink.share_link}`;
             console.log("share uri", fullUrl);
 
-            // 1. Try Modern API (Works on HTTPS / Localhost)
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                try {
-                    await navigator.clipboard.writeText(fullUrl);
-                    toast.success('Share link copied to clipboard!');
-                    return;
-                } catch (err) {
-                    console.warn('Modern clipboard copy failed, trying legacy...', err);
-                }
-            }
-
-            // 2. Legacy Fallback
             try {
-                const textArea = document.createElement("textarea");
-                textArea.value = fullUrl;
-                textArea.style.position = "fixed";
-                textArea.style.left = "-9999px";
-                textArea.style.top = "0";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                const successful = document.execCommand('copy');
-                document.body.removeChild(textArea);
-                if (successful) {
-                    toast.success('Share link copied to clipboard!');
-                    return;
-                }
+                await navigator.clipboard.writeText(fullUrl);
+                toast.success('Share link copied to clipboard!');
             } catch (err) {
-                console.error('Legacy copy failed', err);
+                console.error('Share copy failed:', err);
+                toast.error('Failed to copy link to clipboard');
             }
-
-            // 3. Final Fallback
-            toast((t) => (
-                <div className="flex flex-col gap-2">
-                    <span className="font-medium">Share Link:</span>
-                    <input
-                        type="text"
-                        value={fullUrl}
-                        readOnly
-                        onClick={(e) => (e.target as HTMLInputElement).select()}
-                        className="px-2 py-1 bg-dark-bg border border-dark-border rounded text-xs"
-                    />
-                    <span className="text-xs text-dark-muted">Click to select and copy</span>
-                </div>
-            ), {
-                duration: 8000,
-            });
-
         } catch (error) {
             console.log("got err", error);
             toast.error('Failed to generate share link');
@@ -188,21 +146,11 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
         return currentPath === rootPath;
     };
 
-    const [importantFolders, setImportantFolders] = useState<Array<{ icon: any; label: string; path: string; color: string; hoverColor: string }>>([]);
+    const [importantFolders, setImportantFolders] = useState<Array<{ icon: any; label: string; path: string; color: string; hoverColor: string; bgColor: string }>>([]);
 
     useEffect(() => {
         if (currentPath === rootPath) {
-            const potentialFolders = [
-                { icon: Download, label: 'Downloads', name: 'Downloads', path: `${rootPath}/Downloads`, color: 'bg-accent-green/10 text-accent-green', hoverColor: 'hover:border-accent-green' },
-                { icon: Video, label: 'Videos', name: 'Videos', path: `${rootPath}/Videos`, color: 'bg-red-500/10 text-red-500', hoverColor: 'hover:border-red-500' },
-                { icon: Music, label: 'Music', name: 'Music', path: `${rootPath}/Music`, color: 'bg-pink-500/10 text-pink-500', hoverColor: 'hover:border-pink-500' },
-                { icon: Image, label: 'Pictures', name: 'Pictures', path: `${rootPath}/Pictures`, color: 'bg-yellow-500/10 text-yellow-500', hoverColor: 'hover:border-yellow-500' },
-                { icon: FileText, label: 'Documents', name: 'Documents', path: `${rootPath}/Documents`, color: 'bg-blue-400/10 text-blue-400', hoverColor: 'hover:border-blue-400' },
-                { icon: Github, label: 'Github', name: 'Github', path: `${rootPath}/Github`, color: 'bg-purple-400/10 text-purple-400', hoverColor: 'hover:border-purple-400' },
-                { icon: Folder, label: 'aaxion', name: 'aaxion', path: `${rootPath}/aaxion`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
-                { icon: Folder, label: 'Movies', name: 'Movies', path: `${rootPath}/Movies`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
-                { icon: Folder, label: 'Series', name: 'Series', path: `${rootPath}/Series`, color: 'bg-accent-blue/10 text-accent-blue', hoverColor: 'hover:border-accent-blue' },
-            ];
+            const potentialFolders = getImportantFolders(rootPath);
 
             const existingFolderNames = new Set(
                 files
@@ -211,6 +159,7 @@ export default function FileExplorer({ currentPath, onPathChange, refreshKey }: 
             );
 
             const available = potentialFolders.filter(f => existingFolderNames.has(f.name));
+            // @ts-ignore
             setImportantFolders(available);
         }
     }, [files, rootPath, currentPath]);

@@ -1,5 +1,6 @@
 import { Command } from '@tauri-apps/plugin-shell';
-import { API_BASE, getToken } from './api';
+import { getApiBase, getToken } from './api';
+import { base } from 'framer-motion/client';
 
 const VLC_PWD = "aaxion_secret";
 const VLC_PORT = "9090";
@@ -9,13 +10,17 @@ export async function launchVlc(
     id: number,
     title: string,
     type: 'movie' | 'episode' = 'movie',
-    posterPath?: string
+    posterPath?: string,
+    baseUrl?: string
 ) {
+    console.log("Got api base uri at player.ts", baseUrl);
+
+    const apiBase = baseUrl || getApiBase();
     console.log("VLC launch info logs", "Title", title);
 
     const token = getToken();
     const endpoint = type === 'episode' ? '/api/stream/episode' : '/api/stream/movie';
-    const streamUrl = `${API_BASE}${endpoint}?id=${id}&tkn=${token}`;
+    const streamUrl = `${apiBase}${endpoint}?id=${id}&tkn=${token}`;
 
     // Sanitize title to prevent command injection issues
     const cleanTitle = title.replace(/["']/g, "");

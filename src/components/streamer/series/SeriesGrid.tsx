@@ -1,11 +1,10 @@
 "use client";
-import { useEffect, useState, useRef } from 'react';
-import { authenticatedFetch } from '@/lib/api';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import apiClient from '@/services/apiClient';
 import { editSeries } from '@/services/seriesService';
 import { Search, ListVideo, Play, Loader2, Star, Calendar } from 'lucide-react';
 import { Series } from '@/types';
-
-const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'get_your_dont_look_here';
+import { useOmdbCache } from '@/hooks/useOmdbCache';
 
 interface SeriesGridProps {
     onSelect: (series: Series) => void;
@@ -16,8 +15,23 @@ export default function SeriesGrid({ onSelect, refreshTrigger }: SeriesGridProps
     const [seriesList, setSeriesList] = useState<Series[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
-    const [omdbCache, setOmdbCache] = useState<Record<string, any>>({});
-    const processedIds = useRef(new Set<number>());
+
+    const handleUpdateSeries = useCallback(async (series: Series, posterPath: string) => {
+        // Update backend
+        await editSeries({
+            id: series.id,
+            title: series.title,
+            description: series.description,
+            poster_path: posterPath
+        });
+
+        // Update local state
+        setSeriesList(current =>
+            current.map(s => s.id === series.id ? { ...s, poster_path: posterPath } : s)
+        );
+    }, []);
+
+    const omdbCache = useOmdbCache<Series>(seriesList, handleUpdateSeries, 'series', loading);
 
     useEffect(() => {
         const fetchSeries = async () => {
@@ -27,11 +41,8 @@ export default function SeriesGrid({ onSelect, refreshTrigger }: SeriesGridProps
                 : `/api/series/list`;
 
             try {
-                const res = await authenticatedFetch(endpoint);
-                if (res.ok) {
-                    const data = await res.json();
-                    setSeriesList(data || []);
-                }
+                const res = await apiClient.get(endpoint);
+                setSeriesList(res.data || []);
             } catch (e) {
                 console.error(e);
             } finally {
@@ -42,93 +53,6 @@ export default function SeriesGrid({ onSelect, refreshTrigger }: SeriesGridProps
         const debounce = setTimeout(fetchSeries, 300);
         return () => clearTimeout(debounce);
     }, [query, refreshTrigger]);
-
-    // Load omdb cache on mount
-    useEffect(() => {
-        try {
-            const stored = localStorage.getItem('omdb_data_cache');
-            if (stored) {
-                setOmdbCache(JSON.parse(stored));
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }, []);
-
-    // Auto-fetch missing posters
-    useEffect(() => {
-        if (loading || seriesList.length === 0) return;
-
-        // Helper to access LocalStorage safely
-        const getOmdbCache = (): Record<string, any> => {
-            if (typeof window === 'undefined') return {};
-            try {
-                const stored = localStorage.getItem('omdb_data_cache');
-                return stored ? JSON.parse(stored) : {};
-            } catch {
-                return {};
-            }
-        };
-
-        const saveOmdbCache = (key: string, data: any) => {
-            if (typeof window === 'undefined') return;
-            try {
-                const cache = getOmdbCache();
-                cache[key] = data;
-                localStorage.setItem('omdb_data_cache', JSON.stringify(cache));
-                setOmdbCache(cache); // Update local state for UI
-            } catch (e) {
-                console.error("Failed to save omdb cache", e);
-            }
-        };
-
-        const listToProcess = seriesList.filter(s =>
-            !processedIds.current.has(s.id)
-        );
-
-        if (listToProcess.length === 0) return;
-
-        listToProcess.forEach(async (series) => {
-            processedIds.current.add(series.id);
-            const cacheKey = series.title.toLowerCase().trim();
-
-            let data;
-            const cache = getOmdbCache();
-
-            // Try to get from cache first
-            if (cache[cacheKey]) {
-                data = cache[cacheKey];
-            } else {
-                // Fetch from API if not in cache (only if poster is missing or we want to cache data)
-                // If we already have a poster we might skip, but user wants metadata so we fetch if not cached
-                try {
-                    const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(series.title)}&type=series`);
-                    data = await res.json();
-                    if (data && data.Response === 'True') {
-                        saveOmdbCache(cacheKey, data);
-                    }
-                } catch (e) {
-                    console.error(`Failed to auto-fetch poster for ${series.title}`, e);
-                    return;
-                }
-            }
-
-            if (data && data.Response === 'True' && data.Poster && data.Poster !== 'N/A' && !series.poster_path) {
-                // Update backend only if poster was missing and we found one
-                await editSeries({
-                    id: series.id,
-                    title: series.title,
-                    description: series.description,
-                    poster_path: data.Poster
-                });
-
-                // Update local state
-                setSeriesList(current =>
-                    current.map(s => s.id === series.id ? { ...s, poster_path: data.Poster } : s)
-                );
-            }
-        });
-    }, [seriesList, loading]);
 
     return (
         <div className="flex flex-col h-full w-full">

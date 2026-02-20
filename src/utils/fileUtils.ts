@@ -1,3 +1,5 @@
+import { Download, Video, Music, Image, FileText, Github, Folder } from 'lucide-react';
+
 export const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
 
@@ -7,6 +9,21 @@ export const formatFileSize = (bytes: number): string => {
 
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
+
+export const getImportantFolders = (rootPath: string) => {
+    return [
+        { icon: Download, label: 'Downloads', name: 'Downloads', path: `${rootPath}/Downloads`, color: 'text-accent-green', bgColor: 'bg-accent-green/10', hoverColor: 'hover:border-accent-green' },
+        { icon: Video, label: 'Videos', name: 'Videos', path: `${rootPath}/Videos`, color: 'text-red-500', bgColor: 'bg-red-500/10', hoverColor: 'hover:border-red-500' },
+        { icon: Music, label: 'Music', name: 'Music', path: `${rootPath}/Music`, color: 'text-pink-500', bgColor: 'bg-pink-500/10', hoverColor: 'hover:border-pink-500' },
+        { icon: Image, label: 'Pictures', name: 'Pictures', path: `${rootPath}/Pictures`, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', hoverColor: 'hover:border-yellow-500' },
+        { icon: FileText, label: 'Documents', name: 'Documents', path: `${rootPath}/Documents`, color: 'text-blue-400', bgColor: 'bg-blue-400/10', hoverColor: 'hover:border-blue-400' },
+        { icon: Github, label: 'Github', name: 'Github', path: `${rootPath}/Github`, color: 'text-purple-400', bgColor: 'bg-purple-400/10', hoverColor: 'hover:border-purple-400' },
+        { icon: Folder, label: 'aaxion', name: 'aaxion', path: `${rootPath}/aaxion`, color: 'text-accent-blue', bgColor: 'bg-accent-blue/10', hoverColor: 'hover:border-accent-blue' },
+        { icon: Folder, label: 'Movies', name: 'Movies', path: `${rootPath}/Movies`, color: 'text-accent-blue', bgColor: 'bg-accent-blue/10', hoverColor: 'hover:border-accent-blue' },
+        { icon: Folder, label: 'Series', name: 'Series', path: `${rootPath}/Series`, color: 'text-accent-blue', bgColor: 'bg-accent-blue/10', hoverColor: 'hover:border-accent-blue' },
+    ];
+};
+
 
 export const getFileIcon = (filename: string, isDir: boolean): string => {
     if (isDir) return '📁';

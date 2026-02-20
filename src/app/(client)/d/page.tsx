@@ -51,7 +51,7 @@ function DashboardContent() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-dark-bg overflow-hidden">
+        <div className="h-full flex flex-col overflow-hidden">
             <TopBar
                 onUploadClick={() => setIsUploadModalOpen(true)}
                 currentPath={currentPath}

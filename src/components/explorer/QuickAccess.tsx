@@ -6,6 +6,7 @@ interface QuickAccessFolder {
     path: string;
     color: string;
     hoverColor: string;
+    bgColor?: string;
 }
 
 interface QuickAccessProps {
@@ -28,7 +29,7 @@ export default function QuickAccess({ folders, onPathChange }: QuickAccessProps)
                         className={`relative bg-dark-surface border-2 border-dark-border rounded-lg sm:rounded-xl p-3 sm:p-4 ${folder.hoverColor} transition-all cursor-pointer hover-lift group`}
                     >
                         <div className="flex flex-col items-center space-y-2 sm:space-y-3">
-                            <div className={`p-2 sm:p-3 rounded-lg ${folder.color}`}>
+                            <div className={`p-2 sm:p-3 rounded-lg ${folder.bgColor || ''} ${folder.color}`}>
                                 <folder.icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />
                             </div>
                             <p className="text-xs sm:text-sm text-dark-text font-medium text-center">

@@ -37,6 +37,10 @@ export {
     getToken,
     removeToken,
     isAuthenticated,
+    storeServerInfoWithAuth,
+    getStoredServerInfo,
+    getRecentServers,
+    clearServerInfo,
 } from './authService';
 
 // Series Service

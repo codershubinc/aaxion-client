@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Folder, HardDrive, X, Download, Video, Github, FileText, Music, Image, Settings, Save } from 'lucide-react';
+import { Home, Folder, HardDrive, X, Settings, Save } from 'lucide-react';
 import { getSystemRootPath, getStorageInfo, viewFiles } from '@/services';
+import { getImportantFolders } from '@/utils/fileUtils';
 import type { StorageInfo } from '@/types';
 
 interface SidebarProps {
@@ -53,14 +54,7 @@ export default function Sidebar({ currentPath, onPathChange, isOpen, onClose }: 
             );
 
             // Define potential important folders
-            const potentialFolders = [
-                { icon: Download, label: 'Downloads', name: 'Downloads', path: `${root}/Downloads`, color: 'text-accent-green' },
-                { icon: Video, label: 'Videos', name: 'Videos', path: `${root}/Videos`, color: 'text-red-500' },
-                { icon: Music, label: 'Music', name: 'Music', path: `${root}/Music`, color: 'text-pink-500' },
-                { icon: Image, label: 'Pictures', name: 'Pictures', path: `${root}/Pictures`, color: 'text-yellow-500' },
-                { icon: FileText, label: 'Documents', name: 'Documents', path: `${root}/Documents`, color: 'text-blue-400' },
-                { icon: Github, label: 'Github', name: 'Github', path: `${root}/Github`, color: 'text-purple-400' },
-            ];
+            const potentialFolders = getImportantFolders(root);
 
             // Filter to only show folders that exist
             const availableFolders = potentialFolders.filter(folder =>

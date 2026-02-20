@@ -22,10 +22,7 @@ export default function SeriesDetail({ series, onBack }: SeriesDetailProps) {
             setLoading(true);
             try {
                 const res = await getSeriesEpisodes(series.id);
-                if (res.ok) {
-                    const data = await res.json();
-                    setEpisodes(data || []);
-                }
+                setEpisodes(res.data || []);
             } catch (e) {
                 console.error(e);
             } finally {
