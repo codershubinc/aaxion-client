@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { uploadFile, getSystemRootPath } from '@/services';
 import { formatFileSize } from '@/utils/fileUtils';
 
-const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'get_your_dont_look_here';
+const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'get_your_dont_look_here-FUCK_YOU';
 
 interface AddMovieFormProps {
     onSuccess: () => void;
@@ -27,15 +27,8 @@ export default function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps)
         if (!formTitle) return alert("Please enter a title first");
         setIsSearching(true);
         try {
-            const res = await apiClient.get(`https://www.omdbapi.com/`, {
-                params: {
-                    apikey: OMDB_API_KEY,
-                    t: formTitle,
-                },
-                // disable baseURL so it uses absolute URL
-                baseURL: '',
-            });
-            const data = res.data;
+            const res = await fetch(`https://www.omdbapi.com/?apikey=${process.env.NEXT_PUBLIC_OMDB_API_KEY}&t=${formTitle}`)
+            const data = await res.json();
 
             if (data.Response === 'True') {
                 setFormTitle(data.Title);

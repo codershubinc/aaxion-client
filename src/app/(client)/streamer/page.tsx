@@ -107,8 +107,6 @@ export default function StreamerPage() {
         setSelectedSeries(null);
     };
 
-    console.log("JUST A INFO OF SERVERS", GetServerIp());
-
     return (
         <div className="text-gray-100 h-full flex flex-col font-sans">
             {!isAuthenticated && <AuthOverlay onLogin={() => setIsAuthenticated(true)} />}

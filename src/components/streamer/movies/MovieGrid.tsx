@@ -28,6 +28,25 @@ async function editMovie(data: { id: number; title: string; description: string;
     return apiClient.put('/api/movies/edit', data);
 }
 
+// Skeleton Component for loading state
+const MovieCardSkeleton = () => {
+    return (
+        <div className="group flex flex-col gap-3 bg-transparent relative animate-pulse">
+            {/* Poster Placeholder */}
+            <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800/50 shadow-xl ring-1 ring-white/5"></div>
+
+            {/* Text Placeholders */}
+            <div className="space-y-2 px-1 mt-2">
+                <div className="h-4 bg-gray-800/50 rounded-md w-3/4"></div>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 bg-gray-800/50 rounded-md w-12"></div>
+                    <div className="h-3 bg-gray-800/50 rounded-md w-8"></div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(true);
@@ -47,6 +66,7 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
             }
         };
         fetchMovies();
+
     }, [refreshTrigger]);
 
     const handleUpdateMovie = useCallback(async (movie: Movie, posterPath: string) => {
@@ -189,9 +209,10 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                 </div>
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-blue-500">
-                        <Loader2 className="w-10 h-10 animate-spin mb-4" />
-                        <p className="text-gray-500 text-sm">Loading library...</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-10">
+                        {[...Array(12)].map((_, i) => (
+                            <MovieCardSkeleton key={i} />
+                        ))}
                     </div>
                 ) : filteredMovies.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-gray-600">

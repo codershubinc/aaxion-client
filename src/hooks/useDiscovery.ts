@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import toast from "react-hot-toast";
 import { useIpContext } from "@/context/IpContext";
 import { API_ENDPOINTS } from "@/config/api";
+import { SERVER } from "@/constants";
 
 export interface ServerInfo {
     hostname: string;
@@ -72,7 +73,7 @@ export const useDiscovery = () => {
     });
 
     // Helper to extract a usable URL from ServerInfo with IP prioritization and reachability check
-     const getServerUrl = async (info: ServerInfo) => {
+    const getServerUrl = async (info: ServerInfo) => {
         // Prioritize IPs based on network type (higher score = better)
         const prioritizeIP = (ip: string): number => {
             // IPv6 addresses - lowest priority
@@ -121,6 +122,7 @@ export const useDiscovery = () => {
         console.log(`🎯 Selected IP for ${info.hostname}: ${bestIP} (priority: ${reachableIPs[0].priority})`);
         console.log(`   Reachable IPs:`, reachableIPs.map(s => `${s.ip} (${s.priority})`));
 
+        localStorage.setItem("AAXION_SERVER_URL", `http://${bestIP}:${info.port}`);
         return `http://${bestIP}:${info.port}`;
     };
 
@@ -241,5 +243,5 @@ export const useDiscovery = () => {
         scan();
     }, [scan]);
 
-    return { ...state, scan, selectServer , getServerUrl };
+    return { ...state, scan, selectServer, getServerUrl };
 };

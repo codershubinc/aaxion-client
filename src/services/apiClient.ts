@@ -14,6 +14,8 @@ let serverUrl: string | null = typeof window !== 'undefined'
     ? localStorage.getItem(STORAGE_KEYS.SERVER_URL)
     : null;
 
+console.log("Using  server uri", serverUrl);
+
 let serverUrlPromise: Promise<string> | null = null;
 
 const fetchServerUrl = async (): Promise<string> => {
