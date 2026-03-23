@@ -109,8 +109,8 @@ export default function NowPlayingPage() {
             const baseUrl = currentServerUrl || 'http://localhost:8000';
             finalUrl = `${baseUrl.replace(/\/$/, '')}${streamUrl}`;
         } else if (!streamUrl.startsWith('http')) {
-             const baseUrl = currentServerUrl || 'http://localhost:8000';
-             finalUrl = `${baseUrl.replace(/\/$/, '')}/${streamUrl}`;
+            const baseUrl = currentServerUrl || 'http://localhost:8000';
+            finalUrl = `${baseUrl.replace(/\/$/, '')}/${streamUrl}`;
         }
 
         navigator.clipboard.writeText(finalUrl);
