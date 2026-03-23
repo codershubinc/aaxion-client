@@ -12,9 +12,9 @@ export async function launchVlc(
     posterPath?: string,
     baseUrl?: string
 ) {
-    console.log("Got api base uri at player.ts", baseUrl);
+    console.log("Got api base uri at player.ts", localStorage.getItem('AAXION_SERVER_URL'), baseUrl);
 
-    const apiBase = baseUrl || getApiBase();
+    const apiBase = baseUrl || localStorage.getItem('AAXION_SERVER_URL') || getApiBase();
     console.log("VLC launch info logs", "Title", title);
 
     const token = getToken();
