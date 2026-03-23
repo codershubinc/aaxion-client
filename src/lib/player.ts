@@ -1,6 +1,5 @@
 import { Command } from '@tauri-apps/plugin-shell';
 import { getApiBase, getToken } from './api';
-import { base } from 'framer-motion/client';
 
 const VLC_PWD = "aaxion_secret";
 const VLC_PORT = "9090";

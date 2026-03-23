@@ -6,12 +6,12 @@ import { API_ENDPOINTS } from '@/config';
  */
 
 /**
- * Upload a single file
+ * Upload a single small file
  * @param file - The file to upload
  * @param targetDir - The target directory path
  * @param onProgress - Optional callback for upload progress
  */
-export const uploadFile = async (
+const uploadSmallFile = async (
     file: File,
     targetDir: string,
     onProgress?: (progress: number, speed?: number) => void
@@ -115,7 +115,7 @@ export const uploadLargeFile = async (
     targetDir: string,
     onProgress?: (progress: number, speed?: number) => void
 ): Promise<void> => {
-    const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB chunks
+    const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB chunks
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
     // Start chunked upload
@@ -159,6 +159,18 @@ export const uploadLargeFile = async (
         totalUploadedSoFar += chunk.size;
     }
 
-    // Complete upload
     await completeChunkUpload(file.name, targetDir);
+};
+
+export const uploadFile = async (
+    file: File,
+    targetDir: string,
+    onProgress?: (progress: number, speed?: number) => void
+): Promise<void> => {
+    // If the file is larger than 10MB, use chunked upload
+    if (file.size > 10 * 1024 * 1024) {
+        await uploadLargeFile(file, targetDir, onProgress);
+    } else {
+        await uploadSmallFile(file, targetDir, onProgress);
+    }
 };
