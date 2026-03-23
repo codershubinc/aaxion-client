@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Minus, Square, Copy, X, HardDrive, Film, Server } from "lucide-react";
+import { Minus, Square, Copy, X, HardDrive, Film, Server, Menu, MonitorPlay } from "lucide-react";
 import { useTitleBar } from "@/context/TitleBarContext";
 import { useIp } from "@/hooks/useIp";
 
@@ -12,6 +12,7 @@ export default function TitleBar() {
     const { currentSelectedIp, currentServerName, isConnected } = useIp();
     const [appWindow, setAppWindow] = useState<any>(null);
     const [isMaximized, setIsMaximized] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
 
     useEffect(() => {
@@ -64,8 +65,14 @@ export default function TitleBar() {
                 data-tauri-drag-region
                 className="w-full max-w-5xl h-12 backdrop-blur-xl bg-[#0a0a0a]/80 border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex justify-between items-center select-none pointer-events-auto relative overflow-hidden"
             >
-                {/* Left: Logo & App Name */}
-                <div className="flex items-center h-full pl-4 pr-6" data-tauri-drag-region>
+                {/* Left: Logo & App Name & Menu */}
+                <div className="flex items-center h-full pl-4 pr-6 gap-2" data-tauri-drag-region>
+                    <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                        <Menu className="w-5 h-5" />
+                    </button>
                     <Link href="/" className="flex items-center gap-3 group">
                         <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow duration-300">
                             <span className="text-white font-bold text-[10px]">A</span>
@@ -139,6 +146,38 @@ export default function TitleBar() {
                     </div>
                 </div>
             </div>
+
+            {/* Dropdown Menu */}
+            {isMenuOpen && (
+                <div
+                    className="absolute top-14 left-4 w-48 bg-[#0a0a0a]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto py-2 z-[101]"
+                >
+                    <Link
+                        href="/d"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 text-gray-300 hover:text-white transition-colors"
+                    >
+                        <HardDrive className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm font-medium">Drive</span>
+                    </Link>
+                    <Link
+                        href="/streamer"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 text-gray-300 hover:text-white transition-colors"
+                    >
+                        <Film className="w-4 h-4 text-purple-400" />
+                        <span className="text-sm font-medium">Streamer</span>
+                    </Link>
+                    <Link
+                        href="/streamer/now-playing"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 text-gray-300 hover:text-white transition-colors"
+                    >
+                        <MonitorPlay className="w-4 h-4 text-green-400" />
+                        <span className="text-sm font-medium">Now Playing</span>
+                    </Link>
+                </div>
+            )}
         </div>
     );
 }
