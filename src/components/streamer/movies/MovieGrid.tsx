@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useState, useRef, useCallback, use } from 'react';
 import apiClient from '@/services/apiClient';
@@ -236,7 +237,6 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
 
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            // Use a timeout to prevent the document click listener from immediately closing it
                                             setTimeout(() => {
                                                 setOpenMenuId(prev => prev === m.id ? null : m.id);
                                             }, 0);
@@ -258,8 +258,7 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                                             <button
                                                 type="button"
                                                 onClick={e => {
-                                                    e.preventDefault(); e.stopPropagation(); handleScanQr(m); toast.success("Image uri" + m.poster_path
-                                                    ); setOpenMenuId(null);
+                                                    e.preventDefault(); e.stopPropagation(); handleScanQr(m); setOpenMenuId(null);
                                                 }}
                                                 className="flex items-center gap-2 w-full text-left px-4 py-2.5 hover:bg-white/10 transition-colors text-sm"
                                             >
