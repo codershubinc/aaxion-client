@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useState, useRef, useCallback, use } from 'react';
 import apiClient from '@/services/apiClient';
@@ -236,7 +237,6 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
 
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            // Use a timeout to prevent the document click listener from immediately closing it
                                             setTimeout(() => {
                                                 setOpenMenuId(prev => prev === m.id ? null : m.id);
                                             }, 0);
@@ -257,7 +257,9 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={e => { e.preventDefault(); e.stopPropagation(); handleScanQr(m); setOpenMenuId(null); }}
+                                                onClick={e => {
+                                                    e.preventDefault(); e.stopPropagation(); handleScanQr(m); setOpenMenuId(null);
+                                                }}
                                                 className="flex items-center gap-2 w-full text-left px-4 py-2.5 hover:bg-white/10 transition-colors text-sm"
                                             >
                                                 <QrCode className="w-4 h-4" />
@@ -269,7 +271,7 @@ export default function MovieGrid({ onSelect, refreshTrigger }: MovieGridProps) 
                                 {/* Poster Card */}
                                 <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 shadow-xl ring-1 ring-white/5 transition-all duration-300 group-hover:ring-blue-500/50 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] group-hover:scale-[1.03]">
                                     {m.poster_path ? (
-                                        <Image
+                                        <img
                                             src={m.poster_path}
                                             alt={m.title}
                                             width={300}

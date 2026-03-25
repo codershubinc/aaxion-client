@@ -2,6 +2,7 @@ import { API_ENDPOINTS } from '@/config';
 import { Storage, createStoredServerInfo, type DiscoveredServer, type StoredServerInfo } from '@/constants';
 import { clearServerConnection, getStoredServerInfo as getServerInfo, getRecentServers as getRecentServersList } from '@/utils/serverConfig';
 import apiClient from './apiClient';
+import toast from 'react-hot-toast';
 
 interface LoginResponse {
     token: string;
@@ -18,6 +19,8 @@ export const login = async (username: string, password: string) => {
         return response.data;
     } catch (error: any) {
         console.log("Got login err ::", error.message);
+        toast.error(JSON.stringify(error.response) || 'Login failed');
+        toast.error(error.response?.data?.error || 'Login failed');
         throw error.response?.data || error;
     }
 };

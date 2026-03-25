@@ -74,8 +74,8 @@ export default function TitleBar() {
                         <Menu className="w-5 h-5" />
                     </button>
                     <Link href="/" className="flex items-center gap-3 group">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow duration-300">
-                            <span className="text-white font-bold text-[10px]">A</span>
+                        <div className="w-7 h-7 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                            <img src="/icon.svg" alt="Aaxion Logo" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
                         </div>
                         <span className="text-white/90 text-sm font-semibold tracking-tight group-hover:text-white transition-colors">
                             Aaxion

@@ -1,232 +1,65 @@
-# Aaxion Web Client
+# Aaxion Client
 
-A modern, responsive web client for the Aaxion file storage system built with Next.js 14, TypeScript, and Tailwind CSS.
+[![Version](https://img.shields.io/badge/version-v0.0.1-blue.svg)](docs/v0.0.1.md)
 
-## Features
+> ⚠️ **EARLY RELEASE WARNING:** This is an early alpha release (v0.0.1). The software is actively under development and you may encounter bugs, incomplete features, or instability.
 
-- 🎨 **Beautiful Dark Theme** - Modern, eye-friendly dark interface with smooth animations
-- 📁 **File Management** - Browse, upload, download, and organize files
-- 🔄 **Drag & Drop Upload** - Easy file uploads with progress tracking
-- 📤 **Large File Support** - Automatic chunked uploads for files over 100MB
-- 🔗 **Share Links** - Generate temporary sharing links for files
-- 📊 **Grid & List Views** - Switch between different viewing modes
-- ⚡ **Real-time Updates** - Instant refresh and feedback
-- 🎭 **Smooth Animations** - Framer Motion powered transitions
+A unified cross-platform client for the Aaxion Drive and Media streamer ecosystem. Built with a high-performance **Tauri** desktop backend and a lightweight **Next.js** frontend UI.
 
-## Tech Stack
+## 🌟 Capabilities
 
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Animations:** Framer Motion
-- **HTTP Client:** Axios
-- **Icons:** Lucide React
-- **File Upload:** React Dropzone
-- **Notifications:** React Hot Toast
+- **Aaxion Drive**: Browse, upload, organize, and preview your remote files with a beautiful dark interface.
+- **Aaxion Streamer**: A complete media center for your movies and TV shows, with automatic localized OMDB metadata processing and custom cover art.
+- **Native VLC Casting**: Send videos directly from your Aaxion server straight to your local VLC Player, avoiding heavy browser transcoding. Includes a built-in VLC remote control overlay directly in the app.
+- **Auto Server Discovery**: Automatically discovers and securely connects to Aaxion servers running on your local network.
+- **Desktop First**: Features a fully borderless transparent window, custom drag-and-drop title bar, and system-level performance optimizations.
 
-## Getting Started
+👉 For a comprehensive list of features, read the **[v0.0.1 Release Details](docs/v0.0.1.md)**.
 
-### Prerequisites
+## 📥 Installation
 
-- Bun 1.0+ (Install: `curl -fsSL https://bun.sh/install | bash`)
-- Aaxion backend server running on `http://localhost:8080`
+### Universal Linux Installer
 
-### Installation
-
-1. Navigate to the web directory:
+You can quickly install or update the Aaxion desktop client on modern Linux distributions. Run this script in your terminal to fetch the latest AppImage and seamlessly configure it on your system launcher:
 
 ```bash
-cd web
+curl -sL https://raw.githubusercontent.com/codershubinc/aaxion-client/main/install.sh | sh
 ```
 
-2. Run the setup script:
+_(This automatically downloads the client to `~/.local/bin/aaxion` and securely creates a desktop `.desktop` shortcut with the correct icon so you can find it via Gnome/KDE/search menus)._
+
+---
+
+### Building from Source
+
+If you prefer to run it manually or build it yourself:
+
+**Prerequisites:**
+
+- [Bun](https://bun.sh/)
+- [Rust & Cargo](https://rustup.rs/) (for the Tauri desktop wrapper)
+- VLC Media Player (for native casting features)
 
 ```bash
-./setup.sh
-```
+# Clone the repository
+git clone https://github.com/codershubinc/aaxion-client.git
+cd aaxion-client
 
-Or manually install:
-
-```bash
+# Install dependencies
 bun install
-```
 
-3. Start the development server:
+# Run the Desktop App in Development Mode:
+bun run desktop
 
-```bash
+# OR Run as a Web Client only:
 bun dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+## 📚 Documentation
 
-## Project Structure
+- [Changelog](CHANGELOG.md)
+- [v0.0.1 Key Features](docs/v0.0.1.md)
 
-```
-web/
-├── src/
-│   ├── app/              # Next.js app router pages
-│   │   ├── layout.tsx    # Root layout with theme
-│   │   ├── page.tsx      # Home page
-│   │   └── globals.css   # Global styles
-│   ├── components/       # React components
-│   │   ├── FileExplorer.tsx  # Main file browsing interface
-│   │   ├── UploadModal.tsx   # File upload modal
-│   │   ├── Sidebar.tsx       # Navigation sidebar
-│   │   └── TopBar.tsx        # Top navigation bar
-│   ├── services/         # API services
-│   │   └── api.ts        # Backend API calls
-│   ├── types/            # TypeScript types
-│   │   └── index.ts      # Type definitions
-│   └── utils/            # Utility functions
-│       └── fileUtils.ts  # File formatting utilities
-├── public/               # Static assets
-├── next.config.js        # Next.js configuration
-├── tailwind.config.ts    # Tailwind CSS configuration
-├── tsconfig.json         # TypeScript configuration
-└── package.json          # Dependencies
-```
+## 🤝 Contributing
 
-## API Integration
-
-The web client connects to the Aaxion backend API through proxy configuration in `next.config.js`. All API calls are proxied to `http://localhost:8080`.
-
-### Available Endpoints
-
-- `GET /api/files/view` - List files in directory
-- `POST /files/create-directory` - Create new folder
-- `POST /files/upload` - Upload single file
-- `POST /files/upload/chunk/*` - Chunked upload for large files
-- `GET /files/download` - Download file
-- `GET /files/d/r` - Request temporary share link
-- `GET /api/system/get-root-path` - Get system root path
-
-## Building for Production
-
-```bash
-bun run build
-bun start
-```
-
-## Docker Deployment
-
-The project includes a multi-stage Dockerfile for containerized deployment.
-
-### Building the Docker Image
-
-```bash
-docker build -t aaxion-web .
-```
-
-### Running the Container
-
-```bash
-docker run -p 3000:3000 aaxion-web
-```
-
-The application will be available at [http://localhost:3000](http://localhost:3000).
-
-### Docker Build Process
-
-1. **Stage 1 (Builder):** Uses `oven/bun:1-alpine` to install dependencies and build the Next.js application. The build outputs static files to the `/out` directory.
-
-2. **Stage 2 (Runner):** Uses `node:18-alpine` with the `serve` library to serve the static files from the `/out` directory on port 3000.
-
-### Custom Port
-
-To run on a different port:
-
-```bash
-docker run -p 8080:3000 aaxion-web
-```
-
-This maps port 8080 on your host to port 3000 in the container.
-
-## Configuration
-
-### Backend URL
-
-To change the backend URL, update the proxy configuration in `next.config.js`:
-
-```javascript
-async rewrites() {
-  return [
-    {
-      source: '/api/:path*',
-      destination: 'YOUR_BACKEND_URL/api/:path*',
-    },
-    // ...
-  ];
-}
-```
-
-### Theme Customization
-
-Modify colors and styles in `tailwind.config.ts`:
-
-```typescript
-colors: {
-  dark: {
-    bg: '#0a0a0a',        // Background
-    surface: '#141414',   // Surface elements
-    hover: '#1f1f1f',     // Hover states
-    border: '#2a2a2a',    // Borders
-    text: '#e5e5e5',      // Primary text
-    muted: '#a3a3a3',     // Secondary text
-  },
-  accent: {
-    blue: '#3b82f6',      // Primary accent
-    purple: '#8b5cf6',    // Secondary accent
-    green: '#10b981',     // Success states
-  },
-}
-```
-
-## Features in Detail
-
-### File Upload
-
-- Drag and drop files onto the upload area
-- Support for multiple files simultaneously
-- Progress tracking for each file
-- Automatic chunking for files > 100MB
-- Real-time upload status updates
-
-### File Management
-
-- Browse directories with breadcrumb navigation
-- Create new folders inline
-- Download files with one click
-- Generate temporary share links
-- Switch between grid and list views
-
-### User Experience
-
-- Smooth page transitions
-- Loading states and animations
-- Toast notifications for actions
-- Responsive design for all devices
-- Keyboard navigation support
-
-## Troubleshooting
-
-### Backend Connection Issues
-
-- Ensure the backend server is running on port 8080
-- Check the proxy configuration in `next.config.js`
-- Verify CORS settings in the backend
-
-### Upload Failures
-
-- Check file size limits
-- Ensure proper directory permissions
-- Verify the destination path is within the allowed root
-
-## License
-
-Aaxion Web is free software licensed under the [GNU Affero General Public License v3.0](LICENSE).
-Copyright (C) 2026 Swapnil Ingle.
-
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions, issues, and feature requests are heavily encouraged during this alpha period! Feel free to check the [issues page](https://github.com/codershubinc/aaxion-client/issues).

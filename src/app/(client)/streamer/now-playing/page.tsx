@@ -51,9 +51,7 @@ export default function NowPlayingPage() {
             if (!streamUrl) return;
 
             try {
-                const urlObj = new URL(streamUrl, 'http://dummy.com'); // dummy base for relative paths
-                const params = urlObj.searchParams;
-                const id = params.get('id');
+                const id = new URL(streamUrl, 'http://dummy.com').searchParams.get("id");
 
                 if (!id) return;
 
@@ -64,7 +62,7 @@ export default function NowPlayingPage() {
                     const found = movies.find((m: any) => m.id.toString() === id);
                     if (found) setServerMeta(found);
                 } else if (streamUrl.includes('episode')) {
-                    // It's a Series / Episode
+
                     const res = await apiClient.get('/api/series');
                     const seriesList = res.data;
                     let foundEpisode = null;
