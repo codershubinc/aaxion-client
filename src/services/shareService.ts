@@ -16,6 +16,6 @@ export const requestTempShare = async (filePath: string): Promise<{ share_link: 
     });
     return {
         share_link: response.data.share_link,
-        baseUri: getApiBaseUrl(),
+        baseUri: await getApiBaseUrl(),
     };
 };

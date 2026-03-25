@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getToken } from './authService';
 import { STORAGE_KEYS } from '@/constants';
 import getServerUrl from '@/utils/serverUrlWithLiveChecks';
+import toast from 'react-hot-toast';
 
 const apiClient = axios.create({
     headers: {
@@ -25,6 +26,7 @@ const fetchServerUrl = async (): Promise<string> => {
         const serverInfo = JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVER_INFO) || '{}');
         const url = await getServerUrl(serverInfo);
         serverUrl = url;
+        toast.success(`Connected to server at ${url}`);
         localStorage.setItem(STORAGE_KEYS.SERVER_URL, url);
         return url;
     } catch (error) {
@@ -46,7 +48,7 @@ apiClient.interceptors.request.use(
         }
 
         config.baseURL = serverUrl || "http://localhost:8000";
-
+        toast.success("Using server  url " + config.baseURL);
         const token = getToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -55,6 +57,7 @@ apiClient.interceptors.request.use(
         return config;
     },
     (error) => {
+        toast.error("Error occurred while making API request" + (error.message ? `: ${error.message}` : ''));
         return Promise.reject(error);
     }
 );

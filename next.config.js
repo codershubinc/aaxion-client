@@ -6,7 +6,8 @@ const nextConfig = {
         remotePatterns: [
 
             { hostname: "m.media-amazon.com" },
-            { hostname: "image.tmdb.org" }
+            { hostname: "image.tmdb.org" },
+            { hostname: "localhost" }
 
         ]
     },
