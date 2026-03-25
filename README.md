@@ -20,7 +20,7 @@ A unified cross-platform client for the Aaxion Drive and Media streamer ecosyste
 
 ### Universal Linux Installer
 
-You can quickly install or update the Aaxion desktop client on modern Linux distributions. Run this script in your terminal to fetch the latest AppImage and seamlessly configure it on your system launcher:
+You can quickly install or update the Aaxion desktop client on modern Linux distributions. Run this script in your terminal to fetch the latest binary and seamlessly configure it on your system launcher:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/codershubinc/aaxion-client/main/install.sh | sh

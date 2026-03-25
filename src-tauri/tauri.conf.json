@@ -31,7 +31,8 @@
     "targets": [
       "deb",
       "rpm",
-      "msi"
+      "msi",
+      "appimage"
     ],
     "icon": [
       "icons/32x32.png",

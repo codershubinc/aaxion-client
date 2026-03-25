@@ -67,28 +67,26 @@ if echo "$RELEASE_DATA" | grep -q '"message": "Not Found"'; then
     exit 1
 fi
 
-# Extract the AppImage download URL from the JSON payload
-DOWNLOAD_URL=$(echo "$RELEASE_DATA" | grep "browser_download_url.*\.AppImage" | head -n 1 | cut -d '"' -f 4)
+# Extract the binary download URL from the JSON payload (looking for a linux amd64/x86_64 binary)
+# We handle cases where you've uploaded it as "aaxion", "aaxion-linux", "aaxion-amd64", etc., but filter out .deb, .rpm, .AppImage, etc.
+DOWNLOAD_URL=$(echo "$RELEASE_DATA" | grep "browser_download_url" | grep -v "\.deb" | grep -v "\.rpm" | grep -v "\.AppImage" | grep -v "\.zip" | grep -v "\.tar\.gz" | head -n 1 | cut -d '"' -f 4)
 
 if [ -z "$DOWNLOAD_URL" ]; then
-    echo "❌ Could not find an AppImage in the $VERSION release."
+    echo "❌ Could not find a raw Linux binary in the $VERSION release."
     echo "Please check if releases are published correctly at https://github.com/$REPO/releases"
     exit 1
 fi
 
 echo "📥 Downloading $APP_NAME ($VERSION)..."
 mkdir -p "$INSTALL_DIR"
-# Download with progress bar to target AppImage
-if ! curl -L -# -o "$INSTALL_DIR/$BIN_NAME.AppImage" "$DOWNLOAD_URL"; then
+# Download with progress bar to target raw executable
+if ! curl -L -# -o "$INSTALL_DIR/$BIN_NAME" "$DOWNLOAD_URL"; then
     echo "❌ Download failed!"
     exit 1
 fi
 
 # Make it executable
-chmod +x "$INSTALL_DIR/$BIN_NAME.AppImage"
-
-# Setup symlink so user can just type 'aaxion' in terminal
-ln -sf "$INSTALL_DIR/$BIN_NAME.AppImage" "$INSTALL_DIR/$BIN_NAME"
+chmod +x "$INSTALL_DIR/$BIN_NAME"
 
 # Add ~/.local/bin to PATH in current session just in case
 export PATH="$INSTALL_DIR:$PATH"
@@ -104,7 +102,7 @@ curl -sL "https://raw.githubusercontent.com/$REPO/main/src-tauri/icons/icon.png"
 cat > "$DESKTOP_DIR/$BIN_NAME.desktop" << EOF
 [Desktop Entry]
 Name=$APP_NAME
-Exec=$INSTALL_DIR/$BIN_NAME.AppImage
+Exec=$INSTALL_DIR/$BIN_NAME
 Icon=$ICON_DIR/$BIN_NAME.png
 Type=Application
 Categories=Network;FileTransfer;AudioVideo;
