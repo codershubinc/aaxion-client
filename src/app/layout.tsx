@@ -8,6 +8,8 @@ import { Inter, Dancing_Script, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AppProvider } from "@/context/AppContext";
+import { MusicProvider } from "@/context/MusicContext";
+import GlobalMusicPlayer from "@/components/music/GlobalMusicPlayer";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const cursive = Dancing_Script({ subsets: ["latin"], weight: "700", variable: '--font-cursive' });
@@ -62,20 +64,23 @@ export default function RootLayout({
         <html lang="en" className="dark">
             <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white overflow-hidden flex flex-col h-screen rounded-md bg-[#050505]`}>
                 <AppProvider>
-                    <Toaster
-                        position="top-right"
-                        toastOptions={{
-                            className: 'glass-effect border border-dark-border',
-                            style: {
-                                background: '#141414',
-                                color: '#e5e5e5',
-                            },
-                        }}
-                    />
-                    {/*  The Main Content Area   */}
-                    <div className="flex-1 w-full overflow-auto relative">
-                        {children}
-                    </div>
+                    <MusicProvider>
+                        <Toaster
+                            position="top-right"
+                            toastOptions={{
+                                className: 'glass-effect border border-dark-border',
+                                style: {
+                                    background: '#141414',
+                                    color: '#e5e5e5',
+                                },
+                            }}
+                        />
+                        {/*  The Main Content Area   */}
+                        <div className="flex-1 w-full overflow-auto relative mb-20">
+                            {children}
+                        </div>
+                        <GlobalMusicPlayer />
+                    </MusicProvider>
                 </AppProvider>
             </body>
         </html>

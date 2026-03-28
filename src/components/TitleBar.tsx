@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Minus, Square, Copy, X, HardDrive, Film, Server, Menu, MonitorPlay } from "lucide-react";
+import { Minus, Square, Copy, X, HardDrive, Film, Server, Menu, MonitorPlay, Music } from "lucide-react";
 import { useTitleBar } from "@/context/TitleBarContext";
 import { useIp } from "@/hooks/useIp";
 
@@ -94,6 +94,10 @@ export default function TitleBar() {
                             <Link href="/streamer" className={getLinkStyles("/streamer")}>
                                 <Film className="w-3.5 h-3.5" />
                                 <span>Stream</span>
+                            </Link>
+                            <Link href="/music" className={getLinkStyles("/music")}>
+                                <Music className="w-3.5 h-3.5" />
+                                <span>Music</span>
                             </Link>
                         </>
                     )}
