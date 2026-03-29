@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProgressBarProps {
@@ -6,7 +6,7 @@ interface ProgressBarProps {
     progress: number;
     size?: 'sm' | 'lg';
     duration?: number;
-    onProgressClick: (e: MouseEvent<HTMLDivElement>) => void;
+    onProgressClick: (e: React.PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => void;
 }
 
 function formatTime(seconds: number) {
@@ -19,19 +19,37 @@ function formatTime(seconds: number) {
 export const ProgressBar: React.FC<ProgressBarProps> = ({ audioRef, progress, size = 'sm', duration, onProgressClick }) => {
     const [hoverPos, setHoverPos] = useState<number | null>(null);
     const [hoverTime, setHoverTime] = useState<number | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
 
-    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        setIsDragging(true);
+        e.currentTarget.setPointerCapture(e.pointerId);
+        onProgressClick(e);
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
         if (!audioRef.current || !audioRef.current.duration) return;
         const bounds = e.currentTarget.getBoundingClientRect();
-        const percent = (e.clientX - bounds.left) / bounds.width;
+        const percent = Math.max(0, Math.min(1, (e.clientX - bounds.left) / bounds.width));
 
         setHoverPos(percent * 100);
         setHoverTime(percent * audioRef.current.duration);
+
+        if (isDragging) {
+            onProgressClick(e);
+        }
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+        setIsDragging(false);
+        e.currentTarget.releasePointerCapture(e.pointerId);
     };
 
     const handleMouseLeave = () => {
-        setHoverPos(null);
-        setHoverTime(null);
+        if (!isDragging) {
+            setHoverPos(null);
+            setHoverTime(null);
+        }
     };
 
     return (
@@ -40,9 +58,11 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ audioRef, progress, si
                 {audioRef.current ? formatTime(audioRef.current.currentTime) : '0:00'}
             </span>
             <div
-                className={`flex-1 bg-gray-800 rounded-full cursor-pointer relative ${size === 'lg' ? 'h-2' : 'h-1.5'}`}
-                onClick={onProgressClick}
-                onMouseMove={handleMouseMove}
+                className={`flex-1 bg-gray-800 rounded-full cursor-pointer relative ${size === 'lg' ? 'h-2' : 'h-1.5'} touch-none`}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
                 onMouseLeave={handleMouseLeave}
             >
                 {/* Feature 7: Hover Tooltip */}

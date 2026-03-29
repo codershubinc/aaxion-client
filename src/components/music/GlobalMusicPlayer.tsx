@@ -62,12 +62,18 @@ export default function GlobalMusicPlayer() {
                     e.preventDefault();
                     setIsExpanded(prev => !prev);
                     break;
+                case 'KeyN':
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        playNext();
+                    }
+                    break;
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [togglePlay]);
+    }, [togglePlay, playNext]);
 
     useEffect(() => {
         if (currentTrack && audioRef.current) {
@@ -98,10 +104,10 @@ export default function GlobalMusicPlayer() {
         }
     };
 
-    const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleProgressClick = (e: React.MouseEvent<HTMLDivElement> | React.PointerEvent<HTMLDivElement>) => {
         if (audioRef.current) {
             const bounds = e.currentTarget.getBoundingClientRect();
-            const percent = (e.clientX - bounds.left) / bounds.width;
+            const percent = Math.max(0, Math.min(1, (e.clientX - bounds.left) / bounds.width));
             audioRef.current.currentTime = percent * audioRef.current.duration;
             setProgress(percent * 100);
         }
@@ -113,28 +119,42 @@ export default function GlobalMusicPlayer() {
     useEffect(() => {
         if ('mediaSession' in navigator && currentTrack) {
             navigator.mediaSession.metadata = new MediaMetadata({
-                title: currentTrack.title,
-                artist: currentTrack.artist,
-                album: 'Aaxion Music',
+                title: currentTrack.title || 'Unknown Title',
+                artist: currentTrack.artist || 'Unknown Artist',
+                album: currentTrack.album || 'Aaxion Music',
                 artwork: imageUrl ? [
                     { src: imageUrl, sizes: '512x512', type: 'image/jpeg' }
                 ] : []
             });
-
-            navigator.mediaSession.setActionHandler('play', () => {
-                if (!isPlaying) togglePlay();
-            });
-            navigator.mediaSession.setActionHandler('pause', () => {
-                if (isPlaying) togglePlay();
-            });
-            navigator.mediaSession.setActionHandler('previoustrack', () => {
-                playPrev();
-            });
-            navigator.mediaSession.setActionHandler('nexttrack', () => {
-                playNext();
-            });
         }
-    }, [currentTrack, imageUrl, isPlaying, togglePlay, playNext, playPrev]);
+    }, [currentTrack, imageUrl]);
+
+    useEffect(() => {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+        }
+    }, [isPlaying]);
+
+    useEffect(() => {
+        if ('mediaSession' in navigator) {
+            try {
+                navigator.mediaSession.setActionHandler('play', () => {
+                    if (!isPlaying) togglePlay();
+                });
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    if (isPlaying) togglePlay();
+                });
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    playPrev();
+                });
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    playNext();
+                });
+            } catch (err) {
+                console.warn("Failed to set media session action handlers:", err);
+            }
+        }
+    }, [isPlaying, togglePlay, playNext, playPrev]);
 
     if (!currentTrack) return null;
 
@@ -153,7 +173,7 @@ export default function GlobalMusicPlayer() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className={`fixed z-[9999] shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden flex transition-colors duration-1000 ${isExpanded
-                ? `inset-0 w-full h-[100dvh] max-w-none rounded-none flex-col p-8 items-center justify-center ${isAmbientMode ? 'bg-black/30 border-transparent' : 'bg-[#0a0a0a]/95 backdrop-blur-xl border-white/5'}`
+                ? `inset-0 w-full h-[100dvh] max-w-none rounded-none flex-col p-8 items-center justify-center ${isAmbientMode ? 'bg-black/60 border-transparent' : 'bg-[#0a0a0a]/95 backdrop-blur-xl border-white/5'}`
                 : `bottom-6 left-0 right-0 mx-auto w-[95%] max-w-5xl h-[84px] rounded-3xl flex-row items-center px-4 md:px-6 gap-4 md:gap-6 bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/5`
                 }`}
             style={{ transformOrigin: 'bottom center' }}
@@ -171,16 +191,26 @@ export default function GlobalMusicPlayer() {
                         <AnimatePresence mode="wait">
                             <motion.img
                                 key={imageUrl}
-                                initial={{ opacity: 0, scale: 1.1 }}
-                                animate={{ opacity: 1, scale: 1.5 }}
+                                initial={{ opacity: 0, scale: 1.2, x: 0, y: 0 }}
+                                animate={{
+                                    opacity: 1,
+                                    scale: [1.2, 1.3, 1.25, 1.3, 1.2],
+                                    x: [0, 30, -20, 15, 0],
+                                    y: [0, -20, 25, -10, 0]
+                                }}
                                 exit={{ opacity: 0 }}
-                                transition={{ duration: 1.5 }}
+                                transition={{
+                                    opacity: { duration: 1.5 },
+                                    scale: { repeat: Infinity, duration: 30, ease: "linear" },
+                                    x: { repeat: Infinity, duration: 40, ease: "linear" },
+                                    y: { repeat: Infinity, duration: 35, ease: "linear" }
+                                }}
                                 src={imageUrl}
                                 alt=""
                                 className="w-full h-full object-cover blur-[80px] saturate-200 opacity-60"
                             />
                         </AnimatePresence>
-                        <div className="absolute inset-0 bg-black/40 mix-blend-overlay" />
+                        <div className="absolute inset-0 bg-black/60 mix-blend-overlay" />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -243,8 +273,8 @@ export default function GlobalMusicPlayer() {
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <h2 className="text-2xl md:text-4xl font-bold text-white truncate px-4">{currentTrack.title}</h2>
-                                        <p className="text-lg md:text-xl text-gray-400 truncate px-4 mt-2">{currentTrack.artist}</p>
+                                        <h2 className="text-2xl md:text-4xl font-bold text-white truncate px-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{currentTrack.title}</h2>
+                                        <p className="text-lg md:text-xl text-gray-300 truncate px-4 mt-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{currentTrack.artist}</p>
                                     </motion.div>
                                 </AnimatePresence>
                             </div>
@@ -257,14 +287,14 @@ export default function GlobalMusicPlayer() {
                                     <div className="flex-1 flex justify-start">
                                         <button
                                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); setIsQueueOpen(!isQueueOpen); }}
-                                            className={`p-3 rounded-full transition-colors focus:outline-none ${isQueueOpen ? 'text-white bg-white/20' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
+                                            className={`p-3 rounded-full transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] focus:outline-none ${isQueueOpen ? 'text-white bg-white/20' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}
                                         >
                                             <ListMusic className="w-6 h-6" />
                                         </button>
                                     </div>
 
                                     <div className="flex justify-center items-center gap-8 md:gap-12 flex-shrink-0">
-                                        <motion.button whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={(e: React.MouseEvent) => { e.stopPropagation(); playPrev(); }} className="text-gray-400 hover:text-white transition-colors scale-150 drop-shadow-md">
+                                        <motion.button whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={(e: React.MouseEvent) => { e.stopPropagation(); playPrev(); }} className="text-gray-300 hover:text-white transition-colors scale-150 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                                             <SkipBack className="w-5 h-5 fill-current" />
                                         </motion.button>
 
@@ -272,7 +302,7 @@ export default function GlobalMusicPlayer() {
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); togglePlay(); }}
-                                            className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-white transition-colors hover:text-blue-600 shadow-2xl shadow-blue-900/40"
+                                            className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-white transition-colors hover:text-blue-600 shadow-[0_4px_16px_rgba(0,0,0,0.8)]"
                                         >
                                             <AnimatePresence mode="wait">
                                                 <motion.div
@@ -291,7 +321,7 @@ export default function GlobalMusicPlayer() {
                                             </AnimatePresence>
                                         </motion.button>
 
-                                        <motion.button whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={(e: React.MouseEvent) => { e.stopPropagation(); playNext(); }} className="text-gray-400 hover:text-white transition-colors scale-150 drop-shadow-md">
+                                        <motion.button whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={(e: React.MouseEvent) => { e.stopPropagation(); playNext(); }} className="text-gray-300 hover:text-white transition-colors scale-150 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                                             <SkipForward className="w-5 h-5 fill-current" />
                                         </motion.button>
                                     </div>
@@ -299,7 +329,7 @@ export default function GlobalMusicPlayer() {
                                     <div className="flex-1 flex justify-end relative">
                                         <button
                                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
-                                            className={`p-3 rounded-full transition-colors focus:outline-none ${isMenuOpen ? 'text-white bg-white/20' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
+                                            className={`p-3 rounded-full transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] focus:outline-none ${isMenuOpen ? 'text-white bg-white/20' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}
                                         >
                                             <MenuDots className="w-7 h-7" />
                                         </button>
@@ -339,9 +369,9 @@ export default function GlobalMusicPlayer() {
                                     className="absolute bottom-4 right-4 md:bottom-8 md:right-8 flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 md:p-4 cursor-pointer hover:bg-white/10 transition-colors group"
                                     onClick={(e: React.MouseEvent) => { e.stopPropagation(); playNext(); }}
                                 >
-                                    <div className="flex flex-col text-right hidden md:flex">
-                                        <span className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-widest mb-0.5">Up Next</span>
-                                        <span className="text-sm font-medium text-gray-200 truncate max-w-[120px] md:max-w-[180px] group-hover:text-blue-400 transition-colors">{nextTrack.title}</span>
+                                    <div className="flex flex-col text-right hidden md:flex drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                                        <span className="text-[10px] md:text-xs text-gray-300 font-bold uppercase tracking-widest mb-0.5">Up Next</span>
+                                        <span className="text-sm font-medium text-white truncate max-w-[120px] md:max-w-[180px] group-hover:text-blue-400 transition-colors">{nextTrack.title}</span>
                                     </div>
                                     <div className="w-12 h-12 md:w-14 md:h-14  rounded-xl bg-gray-800 overflow-hidden shrink-0 border border-white/10 shadow-lg relative">
                                         <AnimatePresence mode="wait">
