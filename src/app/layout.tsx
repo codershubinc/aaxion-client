@@ -1,5 +1,5 @@
 /*
-    Aaxion Drive - Your own local Google Drive
+    Aaxion - Personal Cloud , stream music, and more.
     Copyright (C) 2026 Swapnil Ingle
 */
 
@@ -61,8 +61,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="dark">
-            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white overflow-hidden flex flex-col h-screen rounded-md bg-[#050505]`}>
+        <html lang="en" className="dark bg-transparent">
+            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white overflow-hidden flex flex-col h-screen rounded-2xl border border-white/5 bg-[#050505]`}>
                 <AppProvider>
                     <MusicProvider>
                         <Toaster

@@ -38,11 +38,11 @@ function MusicLibrary() {
     };
 
     return (
-        <div className="p-6 md:p-8 max-w-7xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
+        <div className="p-6 md:p-8 max-w-7xl mx-auto pb-32  flex flex-col">
             <div className="mb-8 flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                        Aaxion Vault
+                        Aaxion Music
                         <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">
                             Live Sync
                         </span>
@@ -64,12 +64,17 @@ function MusicLibrary() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1">
 
                 {/* LEFT COLUMN: LIBRARY */}
-                <div className="lg:col-span-2 flex flex-col h-full bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm">
+                <div className="lg:col-span-2 flex flex-col bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-white">Library</h2>
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-xl font-semibold text-white">Library</h2>
+                            <span className="text-sm font-medium text-gray-400 bg-gray-800/80 px-2.5 py-0.5 rounded-full border border-gray-700">
+                                {tracks.length} {tracks.length === 1 ? 'song' : 'songs'}
+                            </span>
+                        </div>
 
                         {/* Search Bar */}
                         <div className="relative w-64">
@@ -84,7 +89,7 @@ function MusicLibrary() {
                         </div>
                     </div>
 
-                    <ul className="space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2">
+                    <ul className="space-y-2 flex-1">
                         {filteredTracks.length > 0 ? filteredTracks.map((track, i) => {
                             const isThisPlaying = currentTrack?.id === track.id || currentTrack?.title === track.title;
 
