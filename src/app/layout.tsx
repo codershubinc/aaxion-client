@@ -5,7 +5,7 @@
 
 import type { Metadata } from "next";
 import { Inter, Dancing_Script, Rajdhani } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { Toaster } from "react-hot-toast";
 import { AppProvider } from "@/context/AppContext";
 import { MusicProvider } from "@/context/MusicContext";
@@ -62,26 +62,28 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="dark bg-transparent">
-            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white overflow-hidden flex flex-col h-screen rounded-2xl border border-white/5 bg-[#050505]`}>
-                <AppProvider>
-                    <MusicProvider>
-                        <Toaster
-                            position="top-right"
-                            toastOptions={{
-                                className: 'glass-effect border border-dark-border',
-                                style: {
-                                    background: '#141414',
-                                    color: '#e5e5e5',
-                                },
-                            }}
-                        />
-                        {/*  The Main Content Area   */}
-                        <div className="flex-1 w-full overflow-auto relative mb-20">
-                            {children}
-                        </div>
-                        <GlobalMusicPlayer />
-                    </MusicProvider>
-                </AppProvider>
+            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white bg-transparent h-screen overflow-hidden p-1`}>
+                <div className="flex flex-col h-full w-full rounded-xl border border-white/10 bg-[#050505] overflow-hidden shadow-2xl relative">
+                    <AppProvider>
+                        <MusicProvider>
+                            <Toaster
+                                position="top-right"
+                                toastOptions={{
+                                    className: 'glass-effect border border-dark-border',
+                                    style: {
+                                        background: '#141414',
+                                        color: '#e5e5e5',
+                                    },
+                                }}
+                            />
+                            {/*  The Main Content Area   */}
+                            <div className="flex-1 w-full overflow-auto relative mb-20">
+                                {children}
+                            </div>
+                            <GlobalMusicPlayer />
+                        </MusicProvider>
+                    </AppProvider>
+                </div>
             </body>
         </html>
     );

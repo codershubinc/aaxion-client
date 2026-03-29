@@ -8,6 +8,11 @@
     --background-end-rgb: 10, 10, 10;
 }
 
+html,
+body {
+    background-color: transparent !important;
+}
+
 body {
     color: rgb(var(--foreground-rgb));
 }

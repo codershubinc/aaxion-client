@@ -97,7 +97,7 @@ export default function TitleBar() {
                 </div>
 
                 {/* Center: Navigation */}
-                <div className="hidden md:flex items-center gap-1 justify-center flex-1 mx-4">
+                <div className="hidden w-max md:flex items-center gap-1 justify-center flex-1 mx-4" data-tauri-drag-region>
                     {content || (
                         <>
                             <Link href="/d" className={getLinkStyles("/d")}>
@@ -117,12 +117,12 @@ export default function TitleBar() {
                 </div>
 
                 {/* Right: Server Info & Window Controls */}
-                <div className="flex items-center gap-4 h-full pr-2">
+                <div className="flex items-center gap-4 h-full pr-2" data-tauri-drag-region>
                     {/* Server Info */}
                     {isConnected && (
-                        <div className="hidden sm:flex items-center gap-3 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                        <div className="hidden sm:flex items-center gap-3 px-3 py-1 bg-white/5 rounded-full border border-white/5" data-tauri-drag-region>
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                            <div className="flex flex-col">
+                            <div className="flex flex-col" data-tauri-drag-region>
                                 <span className="text-[10px] text-gray-400 font-medium leading-none mb-0.5">
                                     {currentServerName || 'Unknown'}
                                 </span>
