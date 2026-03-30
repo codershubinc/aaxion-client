@@ -67,6 +67,12 @@ if echo "$RELEASE_DATA" | grep -q '"message": "Not Found"'; then
     exit 1
 fi
 
+# Extract the actual resolved version tag if 'latest' was used
+if [ "$VERSION" = "latest" ]; then
+    VERSION=$(echo "$RELEASE_DATA" | grep '"tag_name":' | head -n 1 | cut -d '"' -f 4)
+    echo "📌 Found latest version: $VERSION"
+fi
+
 # Extract the binary download URL from the JSON payload (looking for a linux amd64/x86_64 binary)
 # We handle cases where you've uploaded it as "aaxion", "aaxion-linux", "aaxion-amd64", etc., but filter out .deb, .rpm, .AppImage, etc.
 DOWNLOAD_URL=$(echo "$RELEASE_DATA" | grep "browser_download_url" | grep -v "\.deb" | grep -v "\.rpm" | grep -v "\.AppImage" | grep -v "\.zip" | grep -v "\.tar\.gz" | head -n 1 | cut -d '"' -f 4)

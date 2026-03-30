@@ -1,13 +1,15 @@
 /*
-    Aaxion Drive - Your own local Google Drive
+    Aaxion - Personal Cloud , stream music, and more.
     Copyright (C) 2026 Swapnil Ingle
 */
 
 import type { Metadata } from "next";
 import { Inter, Dancing_Script, Rajdhani } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { Toaster } from "react-hot-toast";
 import { AppProvider } from "@/context/AppContext";
+import { MusicProvider } from "@/context/MusicContext";
+import GlobalMusicPlayer from "@/components/music/GlobalMusicPlayer";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const cursive = Dancing_Script({ subsets: ["latin"], weight: "700", variable: '--font-cursive' });
@@ -59,24 +61,29 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="dark">
-            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white overflow-hidden flex flex-col h-screen rounded-md bg-[#050505]`}>
-                <AppProvider>
-                    <Toaster
-                        position="top-right"
-                        toastOptions={{
-                            className: 'glass-effect border border-dark-border',
-                            style: {
-                                background: '#141414',
-                                color: '#e5e5e5',
-                            },
-                        }}
-                    />
-                    {/*  The Main Content Area   */}
-                    <div className="flex-1 w-full overflow-auto relative">
-                        {children}
-                    </div>
-                </AppProvider>
+        <html lang="en" className="dark bg-transparent">
+            <body className={`${inter.variable} ${cursive.variable} ${rajdhani.variable} font-sans text-white bg-transparent h-screen overflow-hidden p-1`}>
+                <div className="flex flex-col h-full w-full rounded-xl border border-white/10 bg-[#050505] overflow-hidden shadow-2xl relative">
+                    <AppProvider>
+                        <MusicProvider>
+                            <Toaster
+                                position="top-right"
+                                toastOptions={{
+                                    className: 'glass-effect border border-dark-border',
+                                    style: {
+                                        background: '#141414',
+                                        color: '#e5e5e5',
+                                    },
+                                }}
+                            />
+                            {/*  The Main Content Area   */}
+                            <div className="flex-1 w-full overflow-auto relative mb-20">
+                                {children}
+                            </div>
+                            <GlobalMusicPlayer />
+                        </MusicProvider>
+                    </AppProvider>
+                </div>
             </body>
         </html>
     );

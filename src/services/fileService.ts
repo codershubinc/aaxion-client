@@ -37,15 +37,6 @@ export const downloadFile = (filePath: string): void => {
     const token = getToken();
     const baseUrl = getApiBaseUrl();
     const downloadUrl = `${baseUrl}${API_ENDPOINTS.FILES.DOWNLOAD}?path=${encodeURIComponent(filePath)}`;
-
-    // For downloads, we might need a way to pass the token if it's protected.
-    // Standard window.location download doesn't support headers.
-    // If the API supports query param token, we should append it. 
-    // Otherwise, we might need to use fetch/blob download.
-    // For now, let's assume query string based auth for download or public access? 
-    // Or we handle it via XHR. 
-    // Given the context, let's append token as query param if available, just in case API supports it.
-
     const url = token ? `${downloadUrl}&token=${token}` : downloadUrl;
     window.location.href = url;
 }
