@@ -23,6 +23,7 @@ export default function GlobalMusicPlayer() {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isAmbientMode, setIsAmbientMode] = useState(false);
+    const [isVideoMode, setIsVideoMode] = useState(false);
     const [isQueueOpen, setIsQueueOpen] = useState(false);
     const [hoverPos, setHoverPos] = useState<number | null>(null);
     const [hoverTime, setHoverTime] = useState<number | null>(null);
@@ -115,6 +116,20 @@ export default function GlobalMusicPlayer() {
 
     const streamUrl = `${serverUrl}/music/stream?id=${currentTrack?.id}&tkn=${getToken()}`;
     const imageUrl = currentTrack?.imagePath ? `${serverUrl}/files/view-image?path=${encodeURIComponent(currentTrack.imagePath)}&tkn=${getToken()}` : null;
+
+    const getYoutubeEmbedUrl = (url?: string) => {
+        if (!url) return null;
+        let videoId = '';
+        if (url.includes('youtube.com/watch?v=')) {
+            videoId = url.split('v=')[1]?.split('&')[0];
+        } else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1]?.split('?')[0];
+        } else {
+            videoId = url.split('v=')[1] || url;
+        }
+        return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}` : null;
+    };
+    const ytEmbedUrl = currentTrack?.ytUri ? getYoutubeEmbedUrl(currentTrack.ytUri) : null;
 
     useEffect(() => {
         if ('mediaSession' in navigator && currentTrack) {
@@ -243,17 +258,26 @@ export default function GlobalMusicPlayer() {
 
                         <div className="flex-1 flex flex-col items-center justify-center gap-12 mt-4 md:mt-10">
                             {/* Huge Cover Art with Image Change Animation */}
-                            <motion.div layoutId="album-art" className="w-64 h-64 md:w-96 md:h-96   rounded-2xl bg-gray-900 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-gray-800 relative">
+                            <motion.div layoutId="album-art" className={`w-64 h-64 md:w-96 md:h-96 rounded-2xl bg-gray-900 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-gray-800 relative ${isVideoMode ? 'md:w-[42rem] md:h-[24rem]' : ''} transition-all duration-500`}>
                                 <AnimatePresence mode="wait">
                                     <motion.div
-                                        key={imageUrl || 'empty'}
+                                        key={isVideoMode ? 'video' : (imageUrl || 'empty')}
                                         initial={{ opacity: 0, filter: "blur(10px)", scale: 1.1 }}
                                         animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
                                         exit={{ opacity: 0, filter: "blur(10px)", scale: 0.9 }}
                                         transition={{ duration: 0.4 }}
                                         className="w-full h-full"
                                     >
-                                        {imageUrl ? (
+                                        {isVideoMode && ytEmbedUrl ? (
+                                            <iframe
+                                                src={ytEmbedUrl}
+                                                className="w-full h-full pointer-events-none"
+                                                frameBorder="0"
+                                                allow="autoplay; encrypted-media"
+                                                allowFullScreen
+                                                title="Youtube Live Video"
+                                            />
+                                        ) : imageUrl ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img src={imageUrl} alt="Cover art" className="w-full h-full object-cover" />
                                         ) : (
@@ -341,7 +365,7 @@ export default function GlobalMusicPlayer() {
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                                     transition={{ duration: 0.15 }}
-                                                    className="absolute bottom-full right-0 mb-4 p-4 bg-zinc-900/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl w-56 transform origin-bottom-right z-50 text-left"
+                                                    className="absolute bottom-full right-0 mb-4 p-4 bg-zinc-900/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl w-56 transform origin-bottom-right z-50 text-left space-y-3"
                                                 >
                                                     <div className="flex items-center justify-between cursor-pointer group" onClick={(e) => { e.stopPropagation(); setIsAmbientMode(!isAmbientMode); }}>
                                                         <span className="text-gray-200 text-sm font-medium group-hover:text-white transition-colors">Ambient Mode</span>
@@ -350,6 +374,16 @@ export default function GlobalMusicPlayer() {
                                                             <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                                                         </label>
                                                     </div>
+
+                                                    {ytEmbedUrl && (
+                                                        <div className="flex items-center justify-between cursor-pointer group" onClick={(e) => { e.stopPropagation(); setIsVideoMode(!isVideoMode); }}>
+                                                            <span className="text-gray-200 text-sm font-medium group-hover:text-white transition-colors">Live Video</span>
+                                                            <label className="relative inline-flex items-center cursor-pointer pointer-events-none">
+                                                                <input type="checkbox" className="sr-only peer" checked={isVideoMode} readOnly />
+                                                                <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                                                            </label>
+                                                        </div>
+                                                    )}
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>

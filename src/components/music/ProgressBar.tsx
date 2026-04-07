@@ -1,13 +1,41 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import apiClient from '@/services/apiClient';
+
+export interface Track {
+    id: number | string;
+    title: string;
+    artist: string;
+    album?: string;
+    duration?: number;
+    releaseYear?: number;
+    filePath?: string;
+    imagePath?: string;
+    size?: number;
+    createdAt?: string;
+    ytUri?: string;
+}
 
 interface ProgressBarProps {
     audioRef: React.RefObject<HTMLAudioElement | null>;
     progress: number;
     size?: 'sm' | 'lg';
     duration?: number;
+    track?: Track;
     onProgressClick: (e: React.PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => void;
 }
+
+export const updateTrackInfo = async (track: Track, updatedFields: Partial<Track>) => {
+    if (!track) return null;
+    const fullTrack = { ...track, ...updatedFields };
+    try {
+        const res = await apiClient.put('/music/update', fullTrack);
+        return res.data;
+    } catch (error) {
+        console.error('Failed to update track', error);
+        throw error;
+    }
+};
 
 function formatTime(seconds: number) {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -16,7 +44,7 @@ function formatTime(seconds: number) {
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({ audioRef, progress, size = 'sm', duration, onProgressClick }) => {
+export const ProgressBar: React.FC<ProgressBarProps> = ({ audioRef, progress, size = 'sm', duration, track, onProgressClick }) => {
     const [hoverPos, setHoverPos] = useState<number | null>(null);
     const [hoverTime, setHoverTime] = useState<number | null>(null);
     const [isDragging, setIsDragging] = useState(false);
