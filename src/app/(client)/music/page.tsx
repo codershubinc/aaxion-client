@@ -64,10 +64,10 @@ function MusicLibrary() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 overflow-auto custom-scrollbar">
 
                 {/* LEFT COLUMN: LIBRARY */}
-                <div className="lg:col-span-2 flex flex-col bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm">
+                <div className="lg:col-span-2 flex flex-col bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm overflow-auto custom-scrollbar">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <h2 className="text-xl font-semibold text-white">Library</h2>
@@ -89,7 +89,7 @@ function MusicLibrary() {
                         </div>
                     </div>
 
-                    <ul className="space-y-2 flex-1">
+                    <ul className="space-y-2 flex-1 overflow-auto custom-scrollbar max-h-full">
                         {filteredTracks.length > 0 ? filteredTracks.map((track, i) => {
                             const isThisPlaying = currentTrack?.id === track.id || currentTrack?.title === track.title;
 

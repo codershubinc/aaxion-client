@@ -11,6 +11,7 @@ export interface Track {
     file_path: string;
     imagePath?: string;
     size?: number;
+    ytUri?: string;
 }
 
 export const musicService = {
@@ -29,6 +30,10 @@ export const musicService = {
     getAllTracks: async () => {
         const res = await apiClient.get('/music/all');
         return res.data || [];
+    },
+    updateTrack: async (track: Track) => {
+        const res = await apiClient.put('/music/update', track);
+        return res.data;
     },
     // Fetches active connected suckers
     getDevices: async () => {
