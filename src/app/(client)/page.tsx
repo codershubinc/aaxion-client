@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { HardDrive, Tv } from 'lucide-react';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
+import { useDiscovery } from '@/hooks/useDiscovery';
 
 type Tab = 'drive' | 'stream';
 
@@ -11,6 +12,7 @@ export default function HomePage() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<Tab>('drive');
     const { isAuthenticated, isChecking } = useAuthCheck();
+    const { scan } = useDiscovery();
 
     useEffect(() => {
         if (isChecking) return;
@@ -19,7 +21,9 @@ export default function HomePage() {
             router.push('/login');
             return;
         }
-    }, [isAuthenticated, isChecking, router]);
+        if (isAuthenticated) scan();
+    }, [isAuthenticated, isChecking, router, scan]);
+
 
     const handleNavigate = (tab: Tab) => {
         if (tab === 'drive') {
@@ -62,8 +66,8 @@ export default function HomePage() {
                             <button
                                 onClick={() => setActiveTab('drive')}
                                 className={`relative px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeTab === 'drive'
-                                        ? 'text-white'
-                                        : 'text-gray-400 hover:text-gray-300'
+                                    ? 'text-white'
+                                    : 'text-gray-400 hover:text-gray-300'
                                     }`}
                             >
                                 {activeTab === 'drive' && (
@@ -77,8 +81,8 @@ export default function HomePage() {
                             <button
                                 onClick={() => setActiveTab('stream')}
                                 className={`relative px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeTab === 'stream'
-                                        ? 'text-white'
-                                        : 'text-gray-400 hover:text-gray-300'
+                                    ? 'text-white'
+                                    : 'text-gray-400 hover:text-gray-300'
                                     }`}
                             >
                                 {activeTab === 'stream' && (

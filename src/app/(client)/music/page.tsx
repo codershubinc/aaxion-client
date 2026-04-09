@@ -1,22 +1,25 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { MusicProvider, useMusic } from "@/context/MusicContext";
 import { Play, Monitor, Plus, Search, Music, Wifi, WifiOff } from "lucide-react";
 import { STORAGE_KEYS } from "@/constants";
 import { getToken } from "@/lib/api";
 
 function MusicLibrary() {
-    const { tracks, devices, addTrack, playTrack, currentTrack, isPlaying, isConnected } = useMusic();
+    const { tracks, devices, addTrack, playTrack, currentTrack, isPlaying, isConnected, reconnectWebSocket } = useMusic();
     const [searchQuery, setSearchQuery] = useState("");
     const [url, setUrl] = useState("");
     const [isAdding, setIsAdding] = useState(false);
     const [serverUrl, setServerUrl] = useState<string | null>(null);
 
-    useEffect(() => {
+    const setupInitiate = () => {
         setServerUrl(localStorage.getItem(STORAGE_KEYS.SERVER_URL));
-    }, []);
+        if (!isConnected) {
+            reconnectWebSocket();
+        }
+    }
+    useEffect(setupInitiate, [isConnected, reconnectWebSocket]);
 
-    // Lightning-fast client-side filtering
     const filteredTracks = tracks.filter(track =>
         track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         track.artist.toLowerCase().includes(searchQuery.toLowerCase())
@@ -28,7 +31,7 @@ function MusicLibrary() {
             setIsAdding(true);
             try {
                 await addTrack(url);
-                setUrl(""); // Clear input on success
+                setUrl("");
             } catch (err) {
                 console.error("Failed to add track", err);
             } finally {
@@ -59,6 +62,7 @@ function MusicLibrary() {
                         <>
                             <WifiOff className="w-4 h-4 text-red-400" />
                             <span className="text-xs font-medium text-red-400">Disconnected</span>
+                            <button onClick={setupInitiate} className="ml-4 px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs hover:bg-red-500/30 transition-colors">Reconnect</button>
                         </>
                     )}
                 </div>
