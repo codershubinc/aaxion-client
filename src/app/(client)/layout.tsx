@@ -4,6 +4,7 @@ import TitleBar from '@/components/TitleBar';
 import { TitleBarProvider } from '@/context/TitleBarContext';
 import { IpProvider } from '@/context/IpContext';
 import { useEffect, useState } from 'react';
+import { useDiscovery } from '@/hooks/useDiscovery';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const [isTauri, setIsTauri] = useState(false);

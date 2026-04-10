@@ -23,6 +23,7 @@ interface MusicContextProps {
     playPrev: () => void;
     addTrack: (uri: string) => Promise<void>;
     sendCommand: (targetId: string, action: string, payload?: any) => void;
+    reconnectWebSocket: () => void;
 }
 
 const MusicContext = createContext<MusicContextProps | undefined>(undefined);
@@ -175,10 +176,20 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, [deviceId]);
 
+    // websocket
+    const reconnectWebSocket = useCallback(() => {
+        console.log("[WebSocket] Attempting to reconnect...");
+        if (wsRef.current) return;
+        const url = serverUrl?.replace(/^http/, 'ws://') + `/ws?deviceId=${deviceId}&deviceName=${encodeURIComponent("Aaxion Web")}`;
+        if (!url) {
+            console.warn("[WebSocket] Cannot reconnect, missing URL or device ID.");
+            return;
+        }
+    }, [deviceId, serverUrl]);
     return (
         <MusicContext.Provider value={{
             tracks, devices, deviceId, currentTrack, isPlaying, isConnected,
-            playTrack, togglePlay, playNext, playPrev, addTrack, sendCommand
+            playTrack, togglePlay, playNext, playPrev, addTrack, sendCommand, reconnectWebSocket
         }}>
             {children}
         </MusicContext.Provider>
@@ -190,3 +201,5 @@ export const useMusic = () => {
     if (!context) throw new Error('useMusic must be used within MusicProvider');
     return context;
 };
+
+
