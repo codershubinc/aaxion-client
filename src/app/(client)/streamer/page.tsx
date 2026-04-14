@@ -11,7 +11,6 @@ import VlcRemote from '@/components/streamer/handler/VlcRemote';
 import StreamerHeader from '@/components/streamer/StreamerHeader';
 import { useTitleBar } from '@/context/TitleBarContext';
 import { Series } from '@/types';
-import GetServerIp from '@/utils/getServerIp';
 import { useDiscovery } from '@/hooks/useDiscovery';
 import { STORAGE_KEYS } from '@/constants';
 import { useIp } from '@/hooks/useIp';

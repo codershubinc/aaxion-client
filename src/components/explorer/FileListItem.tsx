@@ -5,6 +5,9 @@ import { formatFileSize, isImageFile } from '@/utils/fileUtils';
 import { getFileIcon } from './utils';
 import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
 
+import { STORAGE_KEYS } from '@/constants';
+import { getToken } from '@/services';
+
 interface FileListItemProps {
     file: FileItem;
     index: number;
@@ -15,8 +18,8 @@ interface FileListItemProps {
 
 export default function FileListItem({ file, index, onClick, onDownload, onShare }: FileListItemProps) {
     const getImageThumbnailUrl = (filePath: string): string => {
-        const baseUrl = getApiBaseUrl();
-        return `${baseUrl}${API_ENDPOINTS.FILES.THUMBNAIL}?path=${encodeURIComponent(filePath)}`;
+        const baseUrl = localStorage.getItem(STORAGE_KEYS.SERVER_URL) || '';
+        return `${baseUrl}${API_ENDPOINTS.FILES.THUMBNAIL}?path=${encodeURIComponent(filePath)}&tkn=${getToken()}`;
     };
 
     return (

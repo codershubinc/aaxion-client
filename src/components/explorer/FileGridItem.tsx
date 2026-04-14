@@ -5,6 +5,7 @@ import { formatFileSize, isImageFile } from '@/utils/fileUtils';
 import { getFileIcon } from './utils';
 import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
 import { getToken } from '@/services';
+import { STORAGE_KEYS } from '@/constants';
 
 interface FileGridItemProps {
     file: FileItem;
@@ -16,7 +17,7 @@ interface FileGridItemProps {
 
 export default function FileGridItem({ file, index, onClick, onDownload, onShare }: FileGridItemProps) {
     const getImageThumbnailUrl = (filePath: string): string => {
-        const baseUrl = getApiBaseUrl();
+        const baseUrl = localStorage.getItem(STORAGE_KEYS.SERVER_URL) || '';
         return `${baseUrl}${API_ENDPOINTS.FILES.THUMBNAIL}?path=${encodeURIComponent(filePath)}&tkn=${getToken()}`;
     };
 
