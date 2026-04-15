@@ -71,5 +71,5 @@ export const SERVER = {
         HTTP: 'http',
         HTTPS: 'https',
     },
-    URL: 'server_url'
+    URL: 'AAXION_SERVER_URL',
 } as const;

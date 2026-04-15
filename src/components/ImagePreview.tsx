@@ -8,6 +8,7 @@ import { downloadFile, getToken } from '@/services';
 import type { FileItem } from '@/types';
 import toast from 'react-hot-toast';
 import { getApiBaseUrl, API_ENDPOINTS } from '@/config';
+import { SERVER } from '@/constants';
 
 interface ImagePreviewProps {
     isOpen: boolean;
@@ -100,12 +101,12 @@ export default function ImagePreview({ isOpen, onClose, files, initialFile }: Im
     };
 
     const getImagePreviewUrl = (filePath: string): string => {
-        const baseUrl = getApiBaseUrl();
-        return `${baseUrl}/files/download?path=${encodeURIComponent(filePath)}&tkn=${getToken()}`;
+        const baseUrl = localStorage.getItem(SERVER.URL) || '';
+        return `${baseUrl}${API_ENDPOINTS.FILES.DOWNLOAD}?path=${encodeURIComponent(filePath)}&tkn=${getToken()}`;
     };
 
     const getImageThumbnailUrl = (filePath: string): string => {
-        const baseUrl = getApiBaseUrl();
+        const baseUrl = localStorage.getItem(SERVER.URL) || '';
         return `${baseUrl}${API_ENDPOINTS.FILES.THUMBNAIL}?path=${encodeURIComponent(filePath)}&tkn=${getToken()}`;
     };
 

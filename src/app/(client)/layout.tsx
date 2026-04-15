@@ -16,6 +16,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         )) {
             setIsTauri(true);
         }
+
+        // Prevent default browser behavior for drag and drop to avoid Tauri navigating to dropped files
+        const preventDefault = (e: DragEvent) => {
+            e.preventDefault();
+        };
+        window.addEventListener('dragover', preventDefault, false);
+        window.addEventListener('drop', preventDefault, false);
+
+        return () => {
+            window.removeEventListener('dragover', preventDefault, false);
+            window.removeEventListener('drop', preventDefault, false);
+        };
     }, []);
 
     return (
